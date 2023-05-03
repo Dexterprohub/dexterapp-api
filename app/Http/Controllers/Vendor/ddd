@@ -1,0 +1,182 @@
+<?php
+
+namespace App\Http\Controllers\Vendor;
+
+use App\Http\Controllers\Controller;
+// use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use App\Http\Requests\Vendor\UpdateVendorInfoRequest;
+use App\Http\Requests\Vendor\UpdateVendorPasswordRequest;
+use App\Http\Requests\Vendor\VendorRegisterRequest;
+use App\Http\Resources\Vendor\VendorRegisterResource;
+use App\Http\Resources\VendorResource;
+use App\Models\Vendor;
+use App\Http\Requests\VendorLoginRequest;
+use Auth;
+use Hash;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+// use Illuminate\Auth\AuthenticationException;
+use App\Providers\RouteServiceProvider;
+
+
+
+class VendorAuthController extends Controller
+{
+  
+
+    public function login(VendorLoginRequest $request){
+        
+        $vendor = Vendor::where('email', $request->email)->first();
+        
+        if ($vendor) {
+            if (Hash::check($request->password, $vendor->password)) {
+                $user = Auth::vendor();
+
+                $token = $vendor->createToken('vendor')->accessToken;
+
+                return response([
+                    'success' => true,
+                    'token' => $token
+                ]);
+            } else {
+           
+                return response([
+                'success' => false,
+                'message' => 'Email or password mismatch'
+                ]);
+            }
+        }
+    }
+
+    public function register(VendorRegisterRequest $request){
+
+        $vendor = Vendor::create($request->only('first_name', 'last_name', 'email', 'phone') 
+        + ['password' => Hash::make($request->input('password'))]);
+
+        $token = $vendor->createToken('vendor')->accessToken;
+
+       
+        return response([ 
+            'data' => new VendorRegisterResource($vendor), 
+            'token' => $token ],
+            Response::HTTP_CREATED
+        );
+   }
+
+   public function logout(Request $request) {
+
+    $vendor = Auth::guard('vendor_api');
+
+    dd($vendor);
+    $token = $request->user()->token();
+    $token->revoke();
+    $response = ['success' => true, 'message' => 'You have been successfully logged out!'];
+    return response($response, 200);
+   
+    
+   }
+
+    public function getLoggedInVendor()
+    {
+        $vendor = Auth::guard('vendor')->user()->check();
+
+        if($vendor){
+            return response()->json(['success' => true, 'data' => $vendor]);
+        };
+
+        if($vendor->check()){
+            return 'yes';
+        }
+        // return (new UserResource($user))->additional([
+        //     'permissions' => $user->permissions()
+        // ]);
+    }
+
+    public function updateInfo(UpdateVendorInfoRequest $request)
+    {
+
+        $vendor = Auth::vendor()->user();
+
+        $user->update($request->only('first_name', 'last_name'));
+
+        return response(new VendorResource($vendor), Response::HTTP_ACCEPTED);
+    }
+
+    public function updatePassword(UpdateVendorPasswordRequest $request)
+    {
+        $user = Auth::user();
+
+        $user->update(['password' => Hash::make($request->input('password'))]);
+
+        return response(['message' => 'Password updated successfully'], Response::HTTP_ACCEPTED);
+    }
+
+    // public function changePassword(Request $request){
+    //     $user = Auth::user();
+    //     $oldpass = $request->old_password;
+    //     $ok = password_verify($oldpass, $user->password);
+    //     if ( $ok == true) {
+    //         if($request->new_password == $request->confirm__password){
+    //             $user->password = bcrypt($request->new_password);
+    //             $user->save();
+    //             return response()->json(['data' => $user, 'message' => 'User Password Updated successfully'],200);
+    //         } else {
+    //             return response()->json(['message' => 'Password doesn\'t match'],200);
+    //         }
+    //     } else {
+    //         return response()->json(['message' => 'Old password doesn\'t match'],200);
+    //     }
+    // }
+
+
+
+
+
+    // public function login(){
+    //     if(Auth::attempt(['email' => request('email'), 'password' => request('password')])){
+    //         $user = Auth::user();
+    //         $success['token'] = $user->createToken('mandu')->accessToken;
+    //         $user->api_token = $success['token'];
+    //         $user->save();
+    //         return response()->json(['success' => $success], 200);
+    //     } else {
+    //         return response()->json(['error' => 'Unauthorised'], 401);
+    //     }
+    // }
+
+    // public function register(Request $request){
+    //     $validator = Validator::make($request->all(), [
+    //         'first_name' => 'required',
+    //         'last_name' => 'required',
+    //         'email' => 'required|email',
+    //         'password' => 'required',
+    //         'c_password' => 'required|same:password',
+    //         'phone' => 'required|numeric',
+    //     ]);
+
+    //     if($validator->fails()){
+    //         return response()->json(['error' => $validator->errors()], 401);
+    //     }
+
+    //     $input = $request->all();
+    //     $input['password'] = bcrypt($input['password']);
+    //     $user = User::create($input);
+    //     $success['token'] = $user->createToken('mandu')->accessToken;
+    //     $user->api_token = $success['token'];
+    //     $user->save();
+    //     $success['name'] = $user->first_name.' '.$user->last_name;
+    //     return response()->json(['success'=>$success], 200);
+    // }
+
+    // public function logout(Request $request)
+    // {
+    //     $user = Auth::guard('api')->user();
+
+    //     if ($user) {
+    //         $user->api_token = null;
+    //         $user->save();
+    //     }
+
+    //     return response()->json(['data' => 'User logged out.'], 200);
+    // }
+}
