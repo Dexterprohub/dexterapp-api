@@ -30,7 +30,7 @@ class CartController extends Controller
             ], Response::HTTP_ACCEPTED);
         }
         
-        $cartWithItems = $cart->with('cartProducts')->first();
+        $cartWithItems = $cart->cartProducts;
         
         return response()->json([
             'success' => true,
