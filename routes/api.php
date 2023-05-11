@@ -188,6 +188,7 @@ Route::group(['middleware' => ['auth:api']], function(){
     Route::post('cart/add-to-cart/{id}', [CartController::class, 'addToCart']);     //Add item to the cart issued by specific user
     Route::post('cart/reduce-from-cart/{id}', [CartController::class, 'decreaseAQuantity']);     //Remove a quantity of a specific item issued by specific user from the cart
     Route::delete('cart/delete-from-cart/{id}', [CartController::class, 'deleteAnItem']);     //Delete a specific item issued by specific user from the cart
+    Route::post('cart/add-product/', [CartController::class, 'addProduct']);     //Delete a specific item issued by specific user from the cart
 
     //CHECKOUTS
     Route::post('checkout', [CheckoutController::class, 'store']);
@@ -236,20 +237,6 @@ Route::group(['middleware' => ['auth:api']], function(){
     Route::post('bookings/create', [BookingsController::class, 'store']);
 
     
-    //FAVOURITE
-    Route::get('myfavouriterestaurant', [FavouritesController::class, 'myFavouriteRestaurant']);     //List the favourite restaurant and food item by specific user
-
-    Route::get('myfavouritefood', [FavouriteController::class, 'myFavouriteFood']);     //List the favourite restaurant and food item by specific user
-
-    Route::post('favouritefood/{id}', [FavouriteController::class, 'food']); //List the favourite restaurant and food item by specific user
-
-    Route::post('favouriterestaurant/{id}', [FavouriteController::class, 'restaurant']);  //List the favourite restaurant and food item by specific user
-
-    Route::delete('deletefavouritefood/{id}', [FavouriteController::class, 'deleteFavouriteFood']);  //Delete a specific item issued by specific user from the cart
-
-    Route::delete('deletefavouriterestaurant/{id}', [FavouriteController::class, 'deleteFavouriteRestaurant']); //Delete a specific item issued by specific user from the cart
-
-
     // BOOKINGS ROUTE
     Route::get('bookings', [BookingsController::class, 'index']);
 
@@ -278,17 +265,10 @@ Route::group(['middleware' => ['auth:api']], function(){
 
     //CATEGORY ROUTES
     Route::get('categories', [CategoryController::class, 'index']);
-    Route::put('categories/update/{id}', [CategoryController::class, 'update']);
     Route::put('categories/show/{id}', [CategoryController::class, 'show']);
     Route::get('categories/categories-in-shop/{id}', [CategoryController::class, 'categoryInShop']);
     Route::get('category/{id}', [CategoryController::class, 'show']);
-    Route::delete('category/delete/{id}', [CategoryController::class, 'delete']);
     
-    
-    
-
-    Route::get('offers', [VendorController::class, 'offers']);
-
 
 
     //TECHNICAL SERVICE ROUTES

@@ -166,4 +166,39 @@ class CartController extends Controller
             'data' => [] 
         ], 404);
     }
+
+
+    public function addProduct(Request $request){
+        $validatedData = $request->validate(
+            [
+                'product_id' => 'required|exists:products,id',
+                'price' => 'required',
+                'qauntity' => 'required',  
+            ]
+        );
+
+        $product = Product::findOrFail($validatedData['product_id']);
+
+        
+        $user = Auth::guard('api')->user();
+        $cart = $user->cart;
+
+        if($cart !=null){
+
+            $cartProduct = new CartProduct();
+            $cartProduct->cart_id = $cart->id;
+            $cartProduct->product_id = $product->id;
+            $cartProduct->quantity = $validatedData['quantity'];
+            $cartProduct->price = $validatedData['price'];
+            $cartProduct->save();
+        }
+
+        $newCart = Cart::create(["user_id" => $user->id]);
+            
+        $cartProduct = CartProduct::create(
+            ["cart_id" => $newCart->id, "product_id" => $product->id, "quantity" => 1, "price" => $product->price]
+        );
+
+      
+    }
 }
