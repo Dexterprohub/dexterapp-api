@@ -18,6 +18,21 @@ class ReviewController extends Controller
             'data' => $review], Response::HTTP_ACCEPTED
         );
     }
+
+    public function userReviews(){
+
+        $user = Auth::guard('api')->user();
+        $reviews = Review::where('user_id', $user->id)->get();
+
+        return response()->json(
+            [
+                'success' => true,
+                'message' => 'user reviews fetched successfully',
+                'data' => $reviews,
+            ], Response::HTTP_ACCEPTED
+        );
+    }
+
     public function store(ReviewStoreRequest $request) {
         
         $shop = Shop::find($request->shop_id);
@@ -37,22 +52,16 @@ class ReviewController extends Controller
         ], Response::HTTP_CREATED);
     }
 
-
-    public function getReviewsForShopId($id){
-
-        $reviews =  Review::where(["vendor_id" => $id])->get();
-        return response()->json([
-            'success' => true,
-            'data' => ReviewResource::collection($reviews)], Response::HTTP_ACCEPTED
-        );
-    }
-
-    public function getReviewsForVendorId($id){
+    public function getReviewsForVendor($id){
 
         $reviews =  Review::where(["vendor_id" => $id])->get();
-        return response()->json([
-            'success' => true,
-            'data' => $reviews ], Response::HTTP_ACCEPTED
+        
+        return response()->json(
+            [
+                'success' => true,
+                'message' => 'reviews for vendor fetched',
+                'data' => ReviewResource::collection($reviews)
+            ], Response::HTTP_ACCEPTED
         );
     }
 }

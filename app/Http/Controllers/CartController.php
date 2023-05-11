@@ -35,7 +35,7 @@ class CartController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Cart',
-            'data' => $cartWithItems,
+            'data' => cartProductResource::collection($cartWithItems),
         ], Response::HTTP_ACCEPTED);
     }
 
@@ -106,12 +106,26 @@ class CartController extends Controller
                     $cartProduct->price = $product->price * $cartProduct->quantity;
                     $cartProduct->save();
 
-                    return response()->json(['success' => true, 'message' => 'item reduced from cart successfully', 'data' => new CartProductResource($cartProduct)], Response::HTTP_ACCEPTED);
-                   
+                    return response()->json(
+                        [
+                            'success' => true, 
+                            'message' => 'item reduced from cart successfully', 
+                            'data' => new CartProductResource($cartProduct)
+                        ], Response::HTTP_ACCEPTED
+                    );  
                 } 
 
-                if($cartProduct->quantity === 1){
-                    return response()->json(['success' => false, 'message' => 'can\'t further reduce item', 'data' => new CartProductResource($cartProduct)]);
+                if($cartProduct->quantity = 1){
+                    
+                    $cartProduct->delete();
+                    
+                    return response()->json(
+                        [
+                            'success' => false, 
+                            'message' => 'item removed from cart', 
+                            'data' => []
+                        ], Response::HTTP_ACCEPTED
+                    );
                 }
 
             }
@@ -165,5 +179,40 @@ class CartController extends Controller
             'message' => 'User has no cart', 
             'data' => [] 
         ], 404);
+    }
+
+
+    public function addProduct(Request $request){
+        $validatedData = $request->validate(
+            [
+                'product_id' => 'required|exists:products,id',
+                'price' => 'required',
+                'qauntity' => 'required',  
+            ]
+        );
+
+        $product = Product::findOrFail($validatedData['product_id']);
+
+        
+        $user = Auth::guard('api')->user();
+        $cart = $user->cart;
+
+        if($cart !=null){
+
+            $cartProduct = new CartProduct();
+            $cartProduct->cart_id = $cart->id;
+            $cartProduct->product_id = $product->id;
+            $cartProduct->quantity = $validatedData['quantity'];
+            $cartProduct->price = $validatedData['price'];
+            $cartProduct->save();
+        }
+
+        $newCart = Cart::create(["user_id" => $user->id]);
+            
+        $cartProduct = CartProduct::create(
+            ["cart_id" => $newCart->id, "product_id" => $product->id, "quantity" => 1, "price" => $product->price]
+        );
+
+      
     }
 }

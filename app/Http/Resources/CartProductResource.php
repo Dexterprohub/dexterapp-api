@@ -17,9 +17,11 @@ class CartProductResource extends JsonResource
         return [
             'id' => $this->id,
             'cart_id' => $this->cart_id,
-            'product_id' => $this->product_id,
+            'product_id' => (int)$this->product_id,
+            'product_name' => $this->product->name,
+            'image' => $this->product->image,
             'quantity' => $this->quantity,
-            'price' => $this->price,
+            'price' => floatval($this->price),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at
         ];

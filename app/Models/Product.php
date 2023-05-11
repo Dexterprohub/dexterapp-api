@@ -34,6 +34,8 @@ class Product extends Model
 
     protected $guarded = ['id'];
     protected $table = 'products';
+    
+    protected $casts = ['price' => 'float',  'id' => 'integer'];
 
     public function vendor(){
         return $this->belongsTo(Vendor::class);

@@ -10,7 +10,10 @@ class CartProduct extends Model
     use HasFactory;
 
     protected $table = "cart_products";
-    protected $guarded = [];
+    protected $guarded = [ ];
+
+    protected $casts = ['price' => 'float', 'product_id' => 'integer'];
+    
 
     public function product(){
         return $this->belongsTo(Product::class);

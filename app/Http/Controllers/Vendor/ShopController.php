@@ -201,7 +201,7 @@ class ShopController
         //get shop
         $shop = Shop::find($id);
 
-        if ($shop == null) {
+        if (!$shop || $shop == null) {
             return response()->json(['status' => 'Business was deleted'], 404);
         }
         //return single shop

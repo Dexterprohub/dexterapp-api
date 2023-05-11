@@ -91,7 +91,6 @@ Route::group(['prefix' => 'vendor'], function(){
         Route::post('create-shop', [ShopController::class, 'createShop']);
         Route::patch('shop/update/{id}', [ShopController::class, 'update']);
         Route::get('shop/show/{id}', [ShopdetailController::class, 'show']);
-        Route::get('shop/{id}', [ShopController::class, 'show']);
         Route::delete('shop/delete/{id}', [ShopController::class, 'destroy']);
         
         //REVIEWS
@@ -99,19 +98,13 @@ Route::group(['prefix' => 'vendor'], function(){
         
         
         Route::get('find-nearest-restaurants/{latitude}/{longitude}/{radius}', [RestaurantController::class, 'findNearestRestaurants']);
-        Route::post('create-restaurant/{id}', [RestaurantController::class, 'store']);
-        Route::post('restaurant-image-upload', [RestaurantController::class, 'restaurantImageUpload']);
     
-        Route::get('technical-services', [ElectricalServiceController::class, 'index']);
-
-
         //CATEGORY ROUTES
         Route::get('categories', [CategoryController::class, 'index']);
         Route::post('categories/create', [CategoryController::class, 'store']);
         Route::put('categories/update/{id}', [CategoryController::class, 'update']);
-        Route::put('categories/show/{id}', [CategoryController::class, 'show']);
+        Route::get('categories/show/{id}', [CategoryController::class, 'show']);
         Route::get('categories/categories-in-shop/{id}', [CategoryController::class, 'categoryInShop']);
-        Route::get('category/{id}', [CategoryController::class, 'show']);
         Route::delete('category/delete/{id}', [CategoryController::class, 'delete']);
 
 
@@ -120,8 +113,6 @@ Route::group(['prefix' => 'vendor'], function(){
         Route::get('products/show/{id}', [ProductController::class, 'show']);
         Route::post('products/store', [ProductController::class, 'store']);
         Route::put('products/update/{id}', [ProductController::class, 'update']);
-        Route::delete("products/delete/{id}", [ProductController::class, 'destroy']);
-        Route::get('products/show/{id}', [ProductController::class, 'show']);
         Route::get('products/products-of-shop/{shop_id}', [ProductController::class, 'productsOfShop']);
         Route::get('products/products-in-category/{category_id}', [ProductController::class, 'productsinCategory']);
         Route::delete('products/delete/{id}', [ProductController::class, 'destroy']);
@@ -168,26 +159,20 @@ Route::group(['middleware' => ['auth:api']], function(){
 
     //User Address ROUTES
     Route::get('myaddress', [AddressController::class, 'myAddress']); //List the address saved by specific user for delivery
-    Route::get('addressbyuser/{id}', [AddressController::class, 'addressByUser']); 
+    Route::get('address/{id}', [AddressController::class, 'addressByUser']); 
     Route::post('addaddress', [AddressController::class, 'addAddress']); //User adds an address manually
-    Route::delete('removeaddress/{id}', [AddressController::class, 'removeAddress']);     //Removes Address
+    Route::post('address/store', [AddressController::class, 'store']); //User adds an address manually
+    Route::delete('address/remove-address/{id}', [AddressController::class, 'removeAddress']);     //Removes Address
     
 
-   
-    Route::get('food', [FoodController::class, 'getFoods']); //Get
-    Route::get('foodofrestaurant/{id}', [FoodController::class, 'foodOfRestaurant']);  //List the foods available in a specific restaurant
-    Route::get('foodbycategory/{id}',[FoodController::class,'foodByCategory']);  //List the foods available in a specific category
-
-    Route::get('restaurants/around-you/{longitude}/{latitude}/radius=400', [RestaurantController::class, 'findNearestRestaurants']);
- 
-  
-    Route::get('offers', [VendorController::class, 'offers']);
+    // Route::get('restaurants/around-you/{longitude}/{latitude}/radius=400', [RestaurantController::class, 'findNearestRestaurants']);
 
     //Carts
     Route::get('cart/my-cart', [CartController::class, 'myCart']);   //List the cart issued by specific user
     Route::post('cart/add-to-cart/{id}', [CartController::class, 'addToCart']);     //Add item to the cart issued by specific user
     Route::post('cart/reduce-from-cart/{id}', [CartController::class, 'decreaseAQuantity']);     //Remove a quantity of a specific item issued by specific user from the cart
     Route::delete('cart/delete-from-cart/{id}', [CartController::class, 'deleteAnItem']);     //Delete a specific item issued by specific user from the cart
+    Route::post('cart/add-product/', [CartController::class, 'addProduct']);     //Delete a specific item issued by specific user from the cart
 
     //CHECKOUTS
     Route::post('checkout', [CheckoutController::class, 'store']);
@@ -236,20 +221,6 @@ Route::group(['middleware' => ['auth:api']], function(){
     Route::post('bookings/create', [BookingsController::class, 'store']);
 
     
-    //FAVOURITE
-    Route::get('myfavouriterestaurant', [FavouritesController::class, 'myFavouriteRestaurant']);     //List the favourite restaurant and food item by specific user
-
-    Route::get('myfavouritefood', [FavouriteController::class, 'myFavouriteFood']);     //List the favourite restaurant and food item by specific user
-
-    Route::post('favouritefood/{id}', [FavouriteController::class, 'food']); //List the favourite restaurant and food item by specific user
-
-    Route::post('favouriterestaurant/{id}', [FavouriteController::class, 'restaurant']);  //List the favourite restaurant and food item by specific user
-
-    Route::delete('deletefavouritefood/{id}', [FavouriteController::class, 'deleteFavouriteFood']);  //Delete a specific item issued by specific user from the cart
-
-    Route::delete('deletefavouriterestaurant/{id}', [FavouriteController::class, 'deleteFavouriteRestaurant']); //Delete a specific item issued by specific user from the cart
-
-
     // BOOKINGS ROUTE
     Route::get('bookings', [BookingsController::class, 'index']);
 
@@ -263,32 +234,17 @@ Route::group(['middleware' => ['auth:api']], function(){
     Route::get("bookings/pending-artisan/{user_id}/get-status/{status}","BookingsController@getPendingBookingForUser");
     Route::get("bookings/get-approved/{customers_id}","BookingsController@getAllwhereUsersIdEqualsCustomersIdAndIsApproved");
 
-    
-    // Route::apiResource('menus', MenuController::class);
-    // Route::apiResource('menu-types', MenuTypeController::class);
-    
-   
     //Review
     Route::get('reviews', [ReviewController::class, 'reviews']);
+    Route::get('reviews/user-reviews', [ReviewController::class, 'reviews']);
     Route::post("reviews/store",[ReviewController::class, "store"]);
-    Route::get("reviews/shop/{id}",[ReviewController::class, 'getReviewsForShopId']);
-    // Route::get("reviews/all-reviews",[ReviewController::class, 'getReviews']);
-    Route::get("reviews/vendor/{id}", [ReviewController::class, 'getReviewsForVendorId']);
-
+    Route::get("reviews/vendor/{id}",[ReviewController::class, 'getReviewsForVendor']);
 
     //CATEGORY ROUTES
     Route::get('categories', [CategoryController::class, 'index']);
-    Route::put('categories/update/{id}', [CategoryController::class, 'update']);
-    Route::put('categories/show/{id}', [CategoryController::class, 'show']);
+    Route::get('categories/show/{id}', [CategoryController::class, 'show']);
     Route::get('categories/categories-in-shop/{id}', [CategoryController::class, 'categoryInShop']);
-    Route::get('category/{id}', [CategoryController::class, 'show']);
-    Route::delete('category/delete/{id}', [CategoryController::class, 'delete']);
     
-    
-    
-
-    Route::get('offers', [VendorController::class, 'offers']);
-
 
 
     //TECHNICAL SERVICE ROUTES

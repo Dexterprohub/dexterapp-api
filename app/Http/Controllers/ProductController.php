@@ -22,6 +22,7 @@ class ProductController extends Controller
     }
 
     public function productsInCategory(Request $request, $category_id){
+        
         $products = Product::where('category_id', $request->category_id)->orderBy('name', 'asc')->get();
         // $data = FoodResource::collection($food);
 
