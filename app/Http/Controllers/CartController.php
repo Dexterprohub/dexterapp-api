@@ -81,7 +81,7 @@ class CartController extends Controller
             
         $cartProduct = CartProduct::create(["cart_id" => $newCart->id, "product_id" => $id, "quantity" => 1, "price" => $product->price]);
 
-        return response(['success' => true,'message' => 'item added successfully', 'data' => CartProductResource::collection($cartProduct)], Response::HTTP_ACCEPTED);
+        return response(['success' => true,'message' => 'item added successfully', 'data' => new CartProductResource($cartProduct)], Response::HTTP_ACCEPTED);
             
     }
 
@@ -148,6 +148,7 @@ class CartController extends Controller
                 return response([
                     'success' => true,
                     'message' => 'item deleted from the cart successfully',
+                    'data' => [],
                 ], Response::HTTP_ACCEPTED);
             } 
             
