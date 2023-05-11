@@ -23,12 +23,11 @@ class ReviewFactory extends Factory
       
        return [
             'user_id' => User::inRandomOrder()->first()->id,
-            //  'vendor_id' => Vendor::inRandomOrder()->first()->id,
+             'vendor_id' => Vendor::inRandomOrder()->first()->id,
             //'booking_id' => Booking::inRandomOrder()->first()->id,
-            'service_id' => Service::inRandomOrder()->first()->id,
+            // 'service_id' => Service::inRandomOrder()->first()->id,
             'review' => $this->faker->text,
             'rating' => $this->faker->numberBetween(1,10),
-            'review_date' => $this->faker->dateTime()
         ];
     }
 }

@@ -16,7 +16,7 @@ class AddressController extends Controller
         $address = Auth::user()->address;
 
         if(!$address){
-            return response()->json(['status' => 404, 'message' => 'Address not found'],404);
+            return response()->json(['success' => true, 'message' => 'Address not found', 'address' => []],404);
         }
 
         return response([
@@ -24,31 +24,42 @@ class AddressController extends Controller
             'data' => AddressResource::collection($address)], Response::HTTP_ACCEPTED);
     }
 
-    public function addAddress(Request $request){
+    public function store(Request $request){
 
-        $user = Auth::user();
+        $user = Auth::guard('api')->user();
 
-        $address = Address::create([
-            'user_id' => $user->id,
-            'address' => $request->address
+        $validatedData = $request->validate([
+            'address' => 'required',
         ]);
 
-        $data = new AddressResource($address);
+        $address = new Address();
+        $address->user_id = $user->id;
+        $address->address = $validatedData['address'];
+        $address->save();
 
-        return response()->json([
-            'message' => 'Address added successfully',
-            'success' => true,
-            'data' => $data,
-        ], Response::HTTP_CREATED);
-
+        // $data = new AddressResource($address);
+        
+        return response()->json(
+            [
+                'success' => true, 
+                'message' => 'user address stored successfully', 
+                'data' => [new AddressResource($address)],
+            ], Response::HTTP_CREATED
+        );
     }
+
     public function addressByUser($id){
+
         $address = Address::where('user_id', $id)->get();
 
-        return response(AddressResource::collection($address), Response::HTTP_ACCEPTED);
+        return response()->json(
+            [
+                'success' => true, 
+                'message' => 'user addresses',
+                'data' => AddressResource::collection($address),
+            ], Response::HTTP_ACCEPTED
+        );
     }
-
-
 
     public function removeAddress($id){
 
@@ -60,7 +71,13 @@ class AddressController extends Controller
 
         $address->delete();
 
-        return response()->json(['status' => 200,'message' => 'Address deleted successfully'],200);
+        return response()->json(
+            [
+                'success' => true,
+                'message' => 'Address deleted successfully',
+                'data' => []
+            ], Response::HTTP_ACCEPTED
+        );
 
     }
 

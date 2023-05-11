@@ -14,21 +14,28 @@ use App\Http\Resources\CategoryResource;
 
 class CategoryController extends Controller{
 
-    protected $request;
+    
     public function index(Request $request) {
 
-        //laravel automatically converts it to json and sends a response text too
-        //$auth = auth("admins")->authenticate($request->token);
         $categories = Category::all();
 
         if ($categories->count() == 0){
-            return response(['success' => true, 'data' => 'No category found'], Response::HTTP_ACCEPTED);
+            return response(
+                [
+                    'success' => true, 
+                    'message' => 'no category found',
+                    'data' => []
+                ], Response::HTTP_ACCEPTED
+            );
         }
-        return response()->json([
-            'success'=> true,
-            'data'=> CategoryResource::collection($categories),
-        ], Response::HTTP_ACCEPTED);
 
+        return response()->json(
+            [
+                'success'=> true,
+                'message' => 'categories fetched',
+                'data'=> CategoryResource::collection($categories),
+            ], Response::HTTP_ACCEPTED
+        );
     }
 
     public function categoriesOfShop(Request $request, $shop_id){
@@ -131,7 +138,13 @@ class CategoryController extends Controller{
     public function show($id){
         $category = Category::find($id);
 
-        return response()->json(['success' => true, 'data' => $category]);
+        return response()->json(
+            [
+                'success' => true, 
+                'message' => 'category',
+                'data' => $category
+            ]
+        );
     }
 
     public function update(Request $request,$id){
@@ -185,6 +198,7 @@ class CategoryController extends Controller{
                 'message' => 'Sorry, category with id ' . $id . ' cannot be found'
             ], 400);
         }
+
         if ($category->delete()) {
             return response()->json([
                 'success' => true,
