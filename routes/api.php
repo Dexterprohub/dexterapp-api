@@ -274,6 +274,15 @@ Route::group(['middleware' => ['auth:api']], function(){
     Route::get("reviews/shop/{id}",[ReviewController::class, 'getReviewsForShopId']);
     // Route::get("reviews/all-reviews",[ReviewController::class, 'getReviews']);
     Route::get("reviews/vendor/{id}", [ReviewController::class, 'getReviewsForVendorId']);
+
+
+    //CATEGORY ROUTES
+    Route::get('categories', [CategoryController::class, 'index']);
+    Route::put('categories/update/{id}', [CategoryController::class, 'update']);
+    Route::put('categories/show/{id}', [CategoryController::class, 'show']);
+    Route::get('categories/categories-in-shop/{id}', [CategoryController::class, 'categoryInShop']);
+    Route::get('category/{id}', [CategoryController::class, 'show']);
+    Route::delete('category/delete/{id}', [CategoryController::class, 'delete']);
     
     
     
