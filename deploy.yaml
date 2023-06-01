@@ -22,7 +22,7 @@ tasks:
     - artisan:route:cache
     - artisan:view:cache
     - artisan:event:cache
-    # - artisan:migrate
+    - artisan:migrate
     - deploy:publish
   yarn:build:
     - run: 'cd {{release_or_current_path}} && yarn build'
