@@ -172,7 +172,6 @@ return [
         */
 
         Kreait\Laravel\Firebase\ServiceProvider::class,
-        // Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
         CloudinaryLabs\CloudinaryLaravel\CloudinaryServiceProvider::class,
         // Unicodeveloper\Paystack\PaystackServiceProvider::class,
         // Davibennun\LaravelPushNotification\LaravelPushNotificationServiceProvider::class,
