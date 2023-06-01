@@ -9,7 +9,7 @@ config:
 
 hosts:
   production:
-    hostname: viraltech.org
+    hostname: getdexterapp.com
     remote_user: root
     deploy_path: '/var/www/getdexterapp.com'
 
