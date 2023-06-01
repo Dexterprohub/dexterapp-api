@@ -23,8 +23,9 @@ services:
             - sail
         depends_on:
             - pgsql
-            - mailpit
             - redis
+            - minio
+            - mailpit
     pgsql:
         image: 'postgres:15'
         ports:
@@ -50,13 +51,6 @@ services:
                 - '${DB_USERNAME}'
             retries: 3
             timeout: 5s
-    mailpit:
-        image: 'axllent/mailpit:latest'
-        ports:
-            - '${FORWARD_MAILPIT_PORT:-1025}:1025'
-            - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
-        networks:
-            - sail
     redis:
         image: 'redis:alpine'
         ports:
@@ -72,6 +66,14 @@ services:
                 - ping
             retries: 3
             timeout: 5s
+            
+    mailpit:
+        image: 'axllent/mailpit:latest'
+        ports:
+            - '${FORWARD_MAILPIT_PORT:-1025}:1025'
+            - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
+        networks:
+            - sail
 networks:
     sail:
         driver: bridge
@@ -79,4 +81,6 @@ volumes:
     sail-pgsql:
         driver: local
     sail-redis:
+        driver: local
+    sail-minio:
         driver: local
