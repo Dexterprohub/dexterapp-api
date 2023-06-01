@@ -48,11 +48,14 @@ class Handler extends ExceptionHandler
         });
     }
 
-    public function render($request, Throwable $exception){
+    public function render($request, Throwable $e){
+        $exceptionCode =  $e->getCode();
 
-        return response([
-            'error' => $exception->getMessage()
-        ], $exception->getCode() ? $exception->getCode() : 400);
+        if(!is_numeric($exceptionCode)){
+            $exceptionCode = 400;
+        }
+
+        return response()->json(['error' => $e->getMessage()], $exceptionCode);
 
     }
 
@@ -65,7 +68,7 @@ class Handler extends ExceptionHandler
     //     if ($request->is("vendor") || $request->is('vendor/*')) {
     //         return redirect()->guest('/vendor');
     //     }
-        
+
     //     return redirect()->guest(route('vendorLogin'));
     // }
 }

@@ -138,7 +138,6 @@ Route::post('register', [AuthController::class, 'register']);
 
 Route::group(['middleware' => ['auth:api']], function(){
 
-
     //USER ROUTES
     Route::get('user', [AuthController::class, 'user']); //gets the current logged in user
     Route::put('users/update-info', [AuthController::class, 'updateInfo']); //updates user information
@@ -146,8 +145,6 @@ Route::group(['middleware' => ['auth:api']], function(){
     Route::apiResource('users', UserController::class); //lists all registered user
     Route::get('email/verification-notification', [EmailVerificationController::class, 'sendVerificationEmail']);
     Route::get('verify-email/{id}/{hash}', [EmailVerificationController::class, 'verify'])->name('verification.verify');
-
-
     
     Route::post('forgot-password', [PasswordResetController::class, 'forgotPassword']);
     Route::post('reset-password', [PasswordResetController::class, 'resetPassword']);

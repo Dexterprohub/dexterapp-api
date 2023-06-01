@@ -9,11 +9,11 @@ use App\Http\Resources\UserRegisterResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 // use Auth;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Hash;
-use Validator;
-use Carbon;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 use App\Notifications\WelcomeEmailNotification;
 use App\Http\Requests\LoginRequest;
@@ -25,7 +25,6 @@ class AuthController extends Controller
 
     protected function register(Request $request)
     {
-
         $validatedData = $request->validate([
             'first_name' => 'required|max:255',
             'last_name' => 'required|max:255',
@@ -35,7 +34,7 @@ class AuthController extends Controller
             // 'password' => ['required', 'confirmed', Password::min(8)],
         ]);
 
-        $otp = \Str::random(4);
+        $otp = Str::random(4);
 
         // Convert string to uppercase and split it into an array of characters
         // $upperCaseOTP = strtoupper($generateOTP);
@@ -52,17 +51,17 @@ class AuthController extends Controller
         $user->otp = $otp;
         $user->otp_expiry = Carbon::now()->addMinutes(5); // Set OTP to expire after 5 minutes
 
-        $user->save(); 
+        $user->save();
 
         $token = $user->createToken('userToken', ['api'])->plainTextToken;
-      
+
         //  $user->notify(new WelcomeEmailNotification($user));
 
         // Dispatch the WelcomeEmail event with the newly created user as a parameter
         event(new UserWelcomeEmail($user));
 
-        return response(['success' => true, 'message' => 'Registration Successful', 'data' => $token], Response::HTTP_CREATED);
-                
+        return response()->json(['success' => true, 'message' => 'Registration Successful', 'data' => $token], Response::HTTP_CREATED);
+
     }
 
     public function login(Request $request){
@@ -79,7 +78,7 @@ class AuthController extends Controller
 
         // Query the users table to retrieve the user by email
         $user = User::where('email', $email)->first();
-         
+
         if ($user) {
             // Validate the password using Hash::check()
             if (Hash::check($password, $user->password)) {
@@ -88,7 +87,7 @@ class AuthController extends Controller
                 $authUser = auth()->guard('api')->user();
 
                 $token = $user->createToken('apiToken', ['api']);
-                
+
                 return response()->json([
                     'success' => true,
                     'message' => 'log in successful',
@@ -96,22 +95,22 @@ class AuthController extends Controller
                 ], Response::HTTP_ACCEPTED);
             } else {
                 $response = ['success' => false, "message" => "Password mismatch"];
-                
+
                 return response($response, 422);
             }
         } else {
             $response = ['success' => false, "message" =>'User does not exist'];
             return response($response, 422);
         }
-                          
-        return response()->json(['success' => false, 'message' => 'Invalid Credentials']);       
+
+        return response()->json(['success' => false, 'message' => 'Invalid Credentials']);
         event(new LoginHistory($user));
-       
+
     }
 
-   
+
     public function logout(Request $request) {
-       
+
          if (Auth::guard('api')->check()) {
             $user = Auth::guard('api')->user();
             $user->currentAccessToken()->delete();
@@ -288,20 +287,20 @@ class AuthController extends Controller
 // }
 
 // public function loggedIn(Request $request)
-// { 
+// {
 //     $validator = Validator::make($request->all(),
 //     [
 //         "id"=>"required|integer",
 //     ]);
-  
-  
+
+
 //     if($validator->fails()){
 //       return response()->json([
 //        "success"=>false,
 //        "message"=>$validator->messages()->toArray(),
-//       ],400);    
+//       ],400);
 //   }
-  
+
 //   $user = $this->user->find($id);
 //   if (!$user) {
 //       return response()->json([
@@ -324,15 +323,15 @@ class AuthController extends Controller
 //     [
 //         "id"=>"required|integer"
 //     ]);
-  
-  
+
+
 //     if($validator->fails()){
 //       return response()->json([
 //        "success"=>false,
 //        "message"=>$validator->messages()->toArray(),
-//       ],400);    
+//       ],400);
 //   }
-  
+
 //   $user = $this->user->find($id);
 //   if (!$user) {
 //       return response()->json([
@@ -358,15 +357,15 @@ class AuthController extends Controller
 //         "facebook_handle"=>"required|string",
 //         "instagram_handle"=>"required|string"
 //     ]);
-  
-  
+
+
 //     if($validator->fails()){
 //       return response()->json([
 //        "success"=>false,
 //        "message"=>$validator->messages()->toArray(),
-//       ],400);    
+//       ],400);
 //   }
-  
+
 //   $user = $this->user->find($id);
 //   if (!$user) {
 //       return response()->json([
@@ -383,7 +382,7 @@ class AuthController extends Controller
 //         'success' => true,
 //         "message"=>"social media account updated"
 //     ],200);
-//    }    
+//    }
 // }
 
 
@@ -416,15 +415,15 @@ class AuthController extends Controller
 //         "gaurantors_name"=>"required|string",
 //         "bank_name"=>"required|string"
 //     ]);
-  
-  
+
+
 //     if($validator->fails()){
 //       return response()->json([
 //        "success"=>false,
 //        "message"=>$validator->messages()->toArray(),
-//       ],400);    
+//       ],400);
 //   }
-  
+
 //   $user = $this->user->find($id);
 //   if (!$user) {
 //       return response()->json([
@@ -436,13 +435,13 @@ class AuthController extends Controller
 
 //  $user->gaurantors_name = $request->gaurantors_name;
 //  $user->bank = $request->bank_name;
-// $user->account_number = $request->account_number; 
+// $user->account_number = $request->account_number;
 //  if($user->save()){
 //     return response()->json([
 //         'success' => true,
 //         "message"=>"social media account updated"
 //     ],200);
-//    } 
+//    }
 // }
 
 // public function GetBankDetails($id)
