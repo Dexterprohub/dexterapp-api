@@ -1,0 +1,33 @@
+import:
+  - recipe/laravel.php
+  - recipe/deploy/push.php
+  - contrib/yarn.php
+
+config:
+  repository: 'git@github.com:Dexterprohub/dexterapp-api.git'
+  php_fpm_version: '8.2'
+
+hosts:
+  production:
+    hostname: viraltech.org
+    remote_user: root
+    deploy_path: '/var/www/getdexterapp.com'
+
+tasks:
+  deploy:
+    - deploy:prepare
+    - deploy:vendors
+    - artisan:storage:link
+    - artisan:config:cache
+    - artisan:route:cache
+    - artisan:view:cache
+    - artisan:event:cache
+    # - artisan:migrate
+    - deploy:publish
+  yarn:build:
+    - run: 'cd {{release_or_current_path}} && yarn build'
+  restart:supervisor:
+    - run: 'supervisorctl restart all'
+after:
+  deploy:failed: deploy:unlock
+  deploy:success: restart:supervisor
