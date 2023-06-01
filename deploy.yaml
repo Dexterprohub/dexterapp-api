@@ -30,4 +30,4 @@ tasks:
     - run: 'supervisorctl restart all'
 after:
   deploy:failed: deploy:unlock
-  deploy:success: restart:supervisor
+#  deploy:success: restart:supervisor
