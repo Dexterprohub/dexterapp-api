@@ -2,8 +2,14 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
+use Illuminate\Http\JsonResponse;
+use Predis\Connection\ConnectionException;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Handler extends ExceptionHandler
 {
@@ -22,7 +28,7 @@ class Handler extends ExceptionHandler
      * @var array<int, class-string<\Throwable>>
      */
     protected $dontReport = [
-        //
+        ConnectionException::class,
     ];
 
     /**
@@ -41,34 +47,42 @@ class Handler extends ExceptionHandler
      *
      * @return void
      */
-    public function register()
+   
+    public function register(): void
     {
-        $this->reportable(function (Throwable $e) {
-            //
+        $this->renderable(function (NotFoundHttpException|QueryException $exception, $request) {
+            if ($this->shouldReturnJson($request, $exception)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'The resource you are trying to access can not be found on this server.',
+                ], Response::HTTP_NOT_FOUND);
+            }
+        });
+
+        $this->renderable(function (AuthenticationException $exception, $request) {
+            if ($this->shouldReturnJson($request, $exception)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $exception->getMessage(),
+                ], Response::HTTP_UNAUTHORIZED);
+            }
+        });
+
+        $this->renderable(function (Throwable $exception, $request) {
+            if ($this->shouldReturnJson($request, $exception)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $exception->getMessage(),
+                ], 500);
+            }
         });
     }
 
-    public function render($request, Throwable $e){
-        $exceptionCode =  $e->getCode();
-
-        if(!is_numeric($exceptionCode)){
-            $exceptionCode = 400;
-        }
-
-        return response()->json(['error' => $e->getMessage()], $exceptionCode);
-
+    private function generalExceptionResponse(Exception $exception): JsonResponse
+    {
+        return response()->json([
+            'status' => 'error',
+            'message' => $exception->getMessage(),
+        ], $exception->getCode());
     }
-
-    // protected function unauthenticated($request, AuthenticationException $exception)
-    // {
-    //     if ($request->expectsJson()) {
-    //         return response()->json(['message' => 'Unauthenticated.'], 401);
-    //     }
-
-    //     if ($request->is("vendor") || $request->is('vendor/*')) {
-    //         return redirect()->guest('/vendor');
-    //     }
-
-    //     return redirect()->guest(route('vendorLogin'));
-    // }
 }

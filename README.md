@@ -1,64 +1,107 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# Dexterpro API
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This repository contains the source code for dexterpro api.
 
-## About Laravel
+## Basic Setup Guide
+1. Ensure that you have [Docker](https://docs.docker.com/get-docker/) installed on your computer. This setup makes use of [Laravel Sail](https://laravel.com/docs/sail).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+2. Clone the repository by running the following command:
+    ```bash
+    git clone git@github.com:Dexterprohub/dexterapp-api.git
+    ```
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+3. Change into the project directory..:
+    ```bash
+    cd dexterapp-api
+    ```
+   
+4. Create a new .env file by copying the contents of the .env.example file:
+    ```bash
+    cp .env.example .env
+    ```
+   
+5. Install all necessary PHP and NodeJs dependencies by running the following command:
+    ```bash 
+    docker run --rm \
+        -u "$(id -u):$(id -g)" \
+        -v $(pwd):/var/www/html \
+        -w /var/www/html \
+        laravelsail/php82-composer:latest \
+        composer install --ignore-platform-reqs && yarn install
+    ```
+   
+6. Start the application by running the following command:
+    ```bash
+    ./vendor/bin/sail up
+    ```
+   
+7. The application should now be running in a Docker container and can be accessed in your web browser at http://localhost
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+8. To start the application in detached mode, you can run the following command:
+    ```bash
+     ./vendor/bin/sail up -d
+    ```
+   
+9. To stop the application, you can run the following command:
+     ```bash
+     ./vendor/bin/sail down
+    ```
+   
+10. To configure a bash alias that allows you to execute sail command easily. You can
+create a bash alias on both  [Linux](https://linuxize.com/post/how-to-create-bash-aliases/)
+and [Windows](https://dev.to/mhjaafar/git-bash-on-windows-adding-a-permanent-alias-198g) operating system.
+    ```bash
+    alias sail='[ -f sail ] && bash sail || bash vendor/bin/sail'
+    ```
+     
+11. Once the bash alias has been configured, you may execute Sail commands by simply typing sail. For example
+    ```bash
+    # To start the application 
+    sail up
+    
+    # To start the application in detached mode
+    sail up -d
+    
+    # To stop the application
+    sail down
+    ```
 
-## Learning Laravel
+12. You can preview emails in your browser via MailHog web interface at: http://localhost:8025
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+13. To share your application publicly, you can use the following command:
+    ```bash
+    sail share
+    ```
+    
+14. To run tests for the application you can use this command:
+     ```bash
+    sail test
+    ```    
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Executing commands
+1. `Artisan Commands` - Laravel Artisan commands may be executed using the artisan command.
+    ```bash
+    sail artisan queue:work
+    ```
+   
+2. `PHP Commands` - PHP commands may be executed using the php command.
+    ```bash
+    sail php --version
 
-## Laravel Sponsors
+    sail php script.php
+    ```
+   
+3. `Composer Commands` - Composer commands may be executed using the composer command.
+    ```bash
+    sail composer require laravel/sanctum
+    ```
+   
+4. `Node / NPM Commands` - Node commands may be executed using the node command while NPM commands may be executed using the npm command:
+    ```bash
+    sail node --version
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+    sail npm run dev
+   
+    # To execute npm commands using yarn
+    sail yarn dev
+    ```
