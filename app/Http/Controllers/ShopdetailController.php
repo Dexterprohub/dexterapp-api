@@ -15,16 +15,16 @@ class ShopdetailController extends Controller
 {
 
     public function show($id){
-        $detail = Shopdetail::find($id);
+        $shop = Shop::find($id);
 
-        return response(['success' => true, 'data' => new ShopdetailResource($detail)], Response::HTTP_ACCEPTED);
+        return response(['success' => true, 'data' => new ShopResource($shop)], Response::HTTP_ACCEPTED);
     }
-    
+
 
     public function store(Request $request){
 
         // Define validation rules for the input data
-        
+
         $rules = [
             'shop_id' => 'required|exists:shops,id',
             'opened_from' => 'required',
@@ -37,16 +37,16 @@ class ShopdetailController extends Controller
             'shippingcost' => 'nullable',
             'additionalcharge' => 'nullable',
         ];
-        
-        
+
+
         // Validate the input data
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return response()->json(['success' => false, 'message' => $validator->errors()->toArray()]);
         }
-                                
-       
+
+
         $shopdetail = new Shopdetail;
 
         $shopdetail->opened_from = $request->opened_from;
@@ -63,31 +63,32 @@ class ShopdetailController extends Controller
 
         // Associate the Shop with the Service and Vendor
         $shopdetail->shop()->associate($shop);
-       
+
         $shop->save();
         $shopdetail->save();
 
-     
+
         return response([
-            'success' => true, 
-            'message' => 'Shop information added successfully', 
+            'success' => true,
+            'message' => 'Shop information added successfully',
             'data' => new ShopdetailResource($shopdetail)
         ], Response::HTTP_ACCEPTED);
 
-        
+
     }
 
 
     public function update(Request $request, $id){
         $edit = Shopdetail::find($id);
+
         if($edit){
-            
+
             $edit->update($request->only('opened_from', 'opened_to', 'address'));
-            
+
             return response(['success' => true, 'message' => $edit]);
         }
 
         return response(['success' => false, 'message' => 'Shop with id '. $id . ' does\'t exist!'], 404 );
-            
+
     }
 }

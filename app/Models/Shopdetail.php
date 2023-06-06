@@ -10,7 +10,8 @@ class Shopdetail extends Model
     use HasFactory;
     protected $fillable = [''];
 
-    public function shop(){
+    public function shop(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
         return $this->belongsTo(Shop::class);
     }
 }

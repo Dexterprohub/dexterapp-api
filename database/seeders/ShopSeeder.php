@@ -20,6 +20,7 @@ class ShopSeeder extends Seeder
     public function run()
     {
         $vendor_id = Vendor::inRandomOrder()->first()->id;
+
         $name = "The Shop One";
         $bio = "Everything you know about the shop";
         $cover_image = "https://img.freepik.com/free-photo/young-african-american-man-doing-laundry_273609-23238.jpg?w=996&t=st=1677102769~exp=1677103369~hmac=01569e63b0312a504743af0f5c241a3b0c5f75268232bddbf865d94133ec2e53";
@@ -59,6 +60,7 @@ class ShopSeeder extends Seeder
             'min_order' => $min_order,
             'additionalcharge' => $additionalcharge,
             'shippingcost' => $shippingcost,
+            'cover_image' => $cover_image,
         ];
 
 

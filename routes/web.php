@@ -21,8 +21,8 @@ Route::get('/', function () {
 
 // Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-Auth::routes();
+//Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-Route::post('register', [AuthController::class, 'create']);
+//Route::post('register', [AuthController::class, 'create']);
