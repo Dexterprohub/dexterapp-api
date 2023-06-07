@@ -32,7 +32,7 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BasicdetailController;
 use Illuminate\Http\Request;
-use App\Http\Controllers\ShopdetailController;
+use App\Http\Controllers\ShopController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\NotificationController;
@@ -91,7 +91,7 @@ Route::group(['prefix' => 'vendor'], function() {
         //SHOP ROUTES
         Route::post('create-shop', [ShopController::class, 'createShop']);
         Route::patch('shop/update/{id}', [ShopController::class, 'update']);
-        Route::get('shop/show/{id}', [ShopdetailController::class, 'show']);
+        Route::get('shop/show/{id}', [ShopController::class, 'show']);
         Route::delete('shop/delete/{id}', [ShopController::class, 'destroy']);
 
         //REVIEWS

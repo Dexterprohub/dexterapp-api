@@ -15,9 +15,9 @@ class ShopResource extends JsonResource
      */
     public function toArray($request)
     {
-        
-    
-        return 
+
+
+        return
         [
             'id' => $this->id,
             'vendor_id' => $this->vendor_id,
@@ -34,9 +34,9 @@ class ShopResource extends JsonResource
             'shippingcost' => $this->shippingcost,
             'additionalcharge' => $this->additionalcharge,
             'min_order' => $this->min_order,
-            'jobscompleted' => $this->jobscompleted,
+//            'jobscompleted' => $this->jobscompleted,
             // 'shop_detail' => $this->when($this->shopdetail !== NULL, $this->shopdetail),
-           
+
         ];
     }
 }

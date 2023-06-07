@@ -11,15 +11,15 @@ use Symfony\Component\HttpFoundation\Response;
 use Validator;
 use Auth;
 
-class ShopdetailController extends Controller
+class ShopController extends Controller
 {
-
-    public function show($id){
-        $shop = Shop::find($id);
-
-        return response(['success' => true, 'data' => new ShopResource($shop)], Response::HTTP_ACCEPTED);
+    public function show(Shop $shop){
+        return response([
+            'status' => 'success',
+            'message' => 'Shop detail retrieved successfully',
+            'data' => $shop
+        ]);
     }
-
 
     public function store(Request $request){
 
