@@ -72,7 +72,7 @@ use App\Notifications\OrderPlacedNotification;
 
 
 
-Route::group(['prefix' => 'vendor'], function(){
+Route::group(['prefix' => 'vendor'], function() {
 
     Route::post('login', [VendorAuthController::class, 'login'])->name('vendorLogin');
     Route::post('register', [VendorAuthController::class, 'register']);

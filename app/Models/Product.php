@@ -4,67 +4,52 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * App\Models\Product
- *
- * @property int $id
- * @property string $title
- * @property string|null $description
- * @property string $image
- * @property string $price
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @method static \Database\Factories\ProductFactory factory(...$parameters)
- * @method static \Illuminate\Database\Eloquent\Builder|Product newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Product newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Product query()
- * @method static \Illuminate\Database\Eloquent\Builder|Product whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Product whereDescription($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Product whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Product whereImage($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Product wherePrice($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Product whereTitle($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Product whereUpdatedAt($value)
- * @mixin \Eloquent
- */
 class Product extends Model
 {
     use HasFactory;
 
-    protected $guarded = ['id'];
-    protected $table = 'products';
-    
-    protected $casts = ['price' => 'float',  'id' => 'integer'];
+    protected $casts = [
+        'price' => 'float',
+        'in_stock' => 'boolean',
+    ];
 
-    public function vendor(){
+    public function vendor(): BelongsTo
+    {
         return $this->belongsTo(Vendor::class);
     }
 
-    public function category(){
+    public function category(): BelongsTo
+    {
         return $this->belongsTo(Category::class);
     }
-    public function cart(){
+    public function cart(): BelongsTo
+    {
         return $this->belongsTo(Cart::class);
     }
-    public function cartProducts(){
+    public function cartProducts(): HasMany
+    {
         return $this->hasMany(CartProduct::class);
     }
 
-    public function service(){
+    public function service(): BelongsTo
+    {
         return $this->belongsTo(Service::class);
     }
-    public function shop(){
+    public function shop(): BelongsTo
+    {
         return $this->belongsTo(Shop::class);
     }
 
-    public function business(){
+    public function business(): BelongsTo
+    {
         return $this->belongsTo(Business::class);
     }
 
-    public function user(){
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
-
-
 }
