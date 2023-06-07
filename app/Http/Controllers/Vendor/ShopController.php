@@ -34,7 +34,7 @@ class ShopController
     public function topRatedShops() {
 
         // get all vendors, sort by reviews rating, get top 10
-        $topVendors = Vendor::withAvg('reviews', 'rating')
+        $topVendors = Vendor::with('shop')->withAvg('reviews', 'rating')
             ->orderBy('reviews_avg_rating', 'desc')
             ->take(10)
             ->get();
