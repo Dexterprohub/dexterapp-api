@@ -46,8 +46,6 @@ class ShopController
     }
 
     public function createShop(Request $request){
-
-
         $validatedData = $request->validate([
             'vendor_id' => 'required|exists:vendors,id',
             'name' => 'required|unique:shops| max:255',
