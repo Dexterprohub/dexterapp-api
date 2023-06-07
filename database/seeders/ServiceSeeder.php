@@ -13,7 +13,7 @@ class ServiceSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         Service::insert([
             ['name' => 'Food Delivery', 'description' =>'Food Delivery Services'],
@@ -23,7 +23,7 @@ class ServiceSeeder extends Seeder
             ['name' => 'House Cleaning', 'description' => 'House Cleaning Services'],
             ['name' => 'Grocery Shopping', 'description' => 'Grocery Services'],
             ['name' => 'Fashion Designer', 'description' => 'Fashion Design Services'],
-            ['name' => 'Shortlet', 'description' => 'Shortles Services'
+            ['name' => 'Shortlet', 'description' => 'Shortles Services']
         ]);
     }
 }
