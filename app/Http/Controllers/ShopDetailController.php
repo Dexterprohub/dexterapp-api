@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Validator;
 use Auth;
 
-class ShopController extends Controller
+class ShopDetailController extends Controller
 {
     public function show(Shop $shop){
         return response([

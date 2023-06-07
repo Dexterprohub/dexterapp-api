@@ -32,7 +32,7 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BasicdetailController;
 use Illuminate\Http\Request;
-use App\Http\Controllers\ShopController;
+use App\Http\Controllers\ShopDetailController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\NotificationController;
@@ -89,10 +89,10 @@ Route::group(['prefix' => 'vendor'], function() {
         Route::put('resend-otp', [VendorAuthController::class, 'resendOTP']);
 
         //SHOP ROUTES
-        Route::post('create-shop', [ShopController::class, 'createShop']);
-        Route::patch('shop/update/{id}', [ShopController::class, 'update']);
-        Route::get('shop/show/{id}', [ShopController::class, 'show']);
-        Route::delete('shop/delete/{id}', [ShopController::class, 'destroy']);
+        Route::post('create-shop', [ShopDetailController::class, 'createShop']);
+        Route::patch('shop/update/{id}', [ShopDetailController::class, 'update']);
+        Route::get('shop/show/{shop}', [ShopDetailController::class, 'show']);
+        Route::delete('shop/delete/{id}', [ShopDetailController::class, 'destroy']);
 
         //REVIEWS
         // Route::post('reviews/store', [ReviewController::class, 'store']);
@@ -206,8 +206,8 @@ Route::group(['middleware' => ['auth:api']], function(){
     Route::apiResource('services', ServiceController::class);
 
 
-    Route::get('rated', [ShopController::class, 'topRatedShops']);
-    Route::get('shops', [ShopController::class, 'getShops']);
+    Route::get('rated', [ShopDetailController::class, 'topRatedShops']);
+    Route::get('shops', [ShopDetailController::class, 'getShops']);
     Route::get('business/{id}', [BusinessController::class, 'show']);
 
 
