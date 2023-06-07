@@ -17,6 +17,4 @@ class VendorService extends Model
     public function vendor(){
         return $this->belongsTo(Vendor::class);
     }
-
-
 }

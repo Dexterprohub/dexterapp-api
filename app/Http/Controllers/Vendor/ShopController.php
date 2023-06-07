@@ -20,54 +20,34 @@ use App\Http\Resources\TopRatedShopNewResource;
 
 class ShopController
 {
-
     public function getShops(){
 
         $shops = Shop::all();
         $data = $shops;
-      
+
         return response([
             'success' => true,
             'Shops' => $data
         ]);
     }
 
-    public function topRatedShops(){
-        //get shop with only the highest rating
-    
-        // $mostRatedShops = DB::table('shops')
-        // ->join('reviews', 'shops.id', '=', 'reviews.shop_id')
-        // ->select('shops.*', DB::raw('AVG(reviews.rating) as average_rating'))
-        // ->groupBy('shops.id')
-        // ->having('average_rating', '=', DB::raw('(SELECT MAX(average_rating) FROM (SELECT AVG(rating) as average_rating FROM reviews GROUP BY shop_id) as ratings)'))
-        // ->orderByDesc('average_rating')
-        // ->get();
+    public function topRatedShops() {
 
-        // $vendors = \DB::table('vendors')
-        //     ->leftJoin('reviews', 'vendors.id', '=', 'reviews.vendor_id')
-        //     ->select('vendors.id', 'vendors.first_name', 'vendors.last_name', \DB::raw('AVG(reviews.rating) as avg_rating'))
-        //     ->groupBy('vendors.id')
-        //     ->orderBy('avg_rating', 'desc')
-        //     ->get();
-
-        $vendors = Vendor::leftJoin('reviews', 'vendors.id', '=', 'reviews.vendor_id')
-            ->join('shops', 'vendors.id', '=', 'shops.vendor_id')
-            ->select('vendors.id', 'shops.name', \DB::raw('AVG(reviews.rating) as avg_rating'), 'shops.*')
-            ->groupBy('vendors.id')
-            ->orderBy('avg_rating', 'desc')
+        // get all vendors, sort by reviews rating, get top 10
+        $topVendors = Vendor::withAvg('reviews', 'rating')
+            ->orderBy('reviews_avg_rating', 'desc')
+            ->take(10)
             ->get();
 
-
-        // return $this->responser(collect($favourite), $data, 'Favourite Food');
         return response([
             'message' => 'successful',
-            'topratedVendors' => $vendors],Response::HTTP_ACCEPTED
-        );
+            'data' => $topVendors
+        ],Response::HTTP_ACCEPTED);
     }
 
     public function createShop(Request $request){
 
-      
+
         $validatedData = $request->validate([
             'vendor_id' => 'required|exists:vendors,id',
             'name' => 'required|unique:shops| max:255',
@@ -85,21 +65,21 @@ class ShopController
             'longitude' => 'nullable',
             'latitude' => 'nullable',
         ]);
-        
-       
+
+
         $image = $request->file("cover_image");
-        
+
         if($image == NULL){
             return response()->json([
                 'success' => false,
                 'message' => 'please select an image'
-            ], 400);    
+            ], 400);
         }
-       
+
         $image_extension = $image->getClientOriginalExtension();
 
         if(SanitizeController::CheckFileExtensions($image_extension, array("png","jpg","jpeg","PNG","JPG","JPEG")) == FALSE) {
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Sorry, this is not an image please ensure your images are png or jpeg files'
@@ -111,7 +91,7 @@ class ShopController
 
         $upload = \Cloudinary::upload($image->getRealPath(), ['folder' => 'shops'])->getSecurePath();
 
-        if ($upload){  
+        if ($upload){
             // Create a new Product instance
             $shop = new Shop([
                 'name' => $validatedData['name'],
@@ -143,7 +123,7 @@ class ShopController
                 'message' => 'Shop created successfully',
                 'data' => new ShopResource($shop)
 
-            ], Response::HTTP_ACCEPTED);   
+            ], Response::HTTP_ACCEPTED);
         }else {
             return response()->json(['success' => false, 'message' => 'bad internet connection']);
         }
@@ -153,22 +133,22 @@ class ShopController
 
     public function update(Request $request, $id){
         $shop = Shop::find($id);
-        
+
         if (!$shop) {
             return response()->json([
                 'success' => false,
                 'message' => 'Sorry, shop with id ' . $id . ' cannot be found'
             ], 400);
         }
-        // check if currently authenticated user is the owner of the buisness  
+        // check if currently authenticated user is the owner of the buisness
 
         $data = $request->all();
-       
+
         if($request->hasFile('cover_image')){
             $image = $request->file('cover_image');
-          
+
             $image_extension = $image->getClientOriginalExtension();
-            
+
             if(SanitizeController::CheckFileExtensions($image_extension,array("png","jpg","jpeg","PNG","JPG","JPEG"))==FALSE){
                 return response()->json(
                     [
@@ -193,7 +173,7 @@ class ShopController
             'success' => true,
             'message'=> "Shop updated successfully",
             'updatedShop' => $shop,
-        ]);                
+        ]);
     }
 
     public function show($id)
@@ -237,9 +217,9 @@ class ShopController
     //         'description'=>'required',
     //         'image'=>'required',
     //     ]);
-        
+
     //     $product=new Product();
-        
+
     //     $product->name=$request->name;
     //     $product->category_id=$request->category_id;
     //     $product->sub_category_id=$request->subcategory_id;

@@ -6,66 +6,56 @@ use App\Notifications\ResetPasswordNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 use Notification;
-
-/**
- * App\Models\Vendor
- *
- * @property int $id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @method static \Illuminate\Database\Eloquent\Builder|Vendor newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Vendor newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Vendor query()
- * @method static \Illuminate\Database\Eloquent\Builder|Vendor whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Vendor whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Vendor whereUpdatedAt($value)
- * @mixin \Eloquent
- */
 class Vendor extends Authenticatable implements MustVerifyEmail
 {
-    use HasApiTokens,  HasFactory, Notifiable; 
+    use HasApiTokens,  HasFactory, Notifiable;
 
-    protected $table = 'vendors';
-
-    protected $guard = 'vendor';
-    
-    protected $guarded = [];
-    
     protected $hidden = ['password', 'remember_token'];
 
-    public function product(){
+    public function product(): BelongsTo
+    {
         return $this->belongsTo(Product::class);
     }
 
-    public function category(){
+    public function category(): BelongsTo
+    {
         return $this->belongsTo(Category::class);
     }
-   
-    public function service(){
+
+    public function service(): BelongsTo
+    {
         return $this->belongsTo(Service::class);
     }
 
-    public function bookings(){
+    public function bookings(): HasMany
+    {
         return $this->hasMany(Booking::class);
     }
 
-    public function state(){
+    public function state(): BelongsTo
+    {
         return $this->belongsTo(State::class);
     }
 
-    public function shop(){
+    public function shop(): HasOne
+    {
         return $this->hasOne(Shop::class);
     }
 
-    public function vendorFcmTokens(){
+    public function vendorFcmTokens(): HasMany
+    {
         return $this->hasMany(VendorFcmToken::class);
     }
 
-    public function basicdetail(){
+    public function basicdetail(): HasOne
+    {
         return $this->hasOne(Basicdetail::class);
     }
 
@@ -78,7 +68,8 @@ class Vendor extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Item::class);
     }
 
-    public function reviews(){
+    public function reviews(): HasMany
+    {
         return $this->hasMany(Review::class);
     }
 

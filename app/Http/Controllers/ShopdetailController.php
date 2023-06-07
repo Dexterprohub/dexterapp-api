@@ -32,7 +32,6 @@ class ShopdetailController extends Controller
             'address' => 'required',
             'email' => 'required|email',
             'phone' => 'required',
-            'address' => 'required',
             'min_order' => 'nullable',
             'shippingcost' => 'nullable',
             'additionalcharge' => 'nullable',
@@ -88,7 +87,6 @@ class ShopdetailController extends Controller
             return response(['success' => true, 'message' => $edit]);
         }
 
-        return response(['success' => false, 'message' => 'Shop with id '. $id . ' does\'t exist!'], 404 );
-
+        return response(['success' => false, 'message' => "Shop with id {$id} does\'t exist!"], 404 );
     }
 }

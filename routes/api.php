@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ServiceItemController;
 use App\Http\Controllers\Vendor\VendorAuthController;
 use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\HomeController;
@@ -79,7 +80,7 @@ Route::group(['prefix' => 'vendor'], function(){
     Route::group(['middleware' => ['auth:vendor']], function(){
 
         Route::put('store-service', [VendorAuthController::class, 'storeVendorType']);
-        
+
         Route::get('authenticated-user', [VendorAuthController::class, 'getAuthVendor']);
         Route::put('basic-detail/update', [VendorAuthController::class, 'update']);
         Route::post('logout', [VendorAuthController::class, 'logout']);
@@ -92,13 +93,13 @@ Route::group(['prefix' => 'vendor'], function(){
         Route::patch('shop/update/{id}', [ShopController::class, 'update']);
         Route::get('shop/show/{id}', [ShopdetailController::class, 'show']);
         Route::delete('shop/delete/{id}', [ShopController::class, 'destroy']);
-        
+
         //REVIEWS
         // Route::post('reviews/store', [ReviewController::class, 'store']);
-        
-        
+
+
         Route::get('find-nearest-restaurants/{latitude}/{longitude}/{radius}', [RestaurantController::class, 'findNearestRestaurants']);
-    
+
         //CATEGORY ROUTES
         Route::get('categories', [CategoryController::class, 'index']);
         Route::post('categories/create', [CategoryController::class, 'store']);
@@ -108,7 +109,7 @@ Route::group(['prefix' => 'vendor'], function(){
         Route::delete('category/delete/{id}', [CategoryController::class, 'delete']);
 
 
-        //PRODUCTS ROUTE
+        //PRODUCTS ROUT
         Route::get('products', [ProductController::class, 'index']);
         Route::get('products/show/{id}', [ProductController::class, 'show']);
         Route::post('products/store', [ProductController::class, 'store']);
@@ -127,8 +128,8 @@ Route::group(['prefix' => 'vendor'], function(){
 
         // Bookings
         Route::put('bookings/accept/{id}', [BookingsController::class, 'acceptBooking']);
-    }); 
-    
+    });
+
 });
 
 
@@ -145,7 +146,7 @@ Route::group(['middleware' => ['auth:api']], function(){
     Route::apiResource('users', UserController::class); //lists all registered user
     Route::get('email/verification-notification', [EmailVerificationController::class, 'sendVerificationEmail']);
     Route::get('verify-email/{id}/{hash}', [EmailVerificationController::class, 'verify'])->name('verification.verify');
-    
+
     Route::post('forgot-password', [PasswordResetController::class, 'forgotPassword']);
     Route::post('reset-password', [PasswordResetController::class, 'resetPassword']);
 
@@ -156,11 +157,11 @@ Route::group(['middleware' => ['auth:api']], function(){
 
     //User Address ROUTES
     Route::get('myaddress', [AddressController::class, 'myAddress']); //List the address saved by specific user for delivery
-    Route::get('address/{id}', [AddressController::class, 'addressByUser']); 
+    Route::get('address/{id}', [AddressController::class, 'addressByUser']);
     Route::post('addaddress', [AddressController::class, 'addAddress']); //User adds an address manually
     Route::post('address/store', [AddressController::class, 'store']); //User adds an address manually
     Route::delete('address/remove-address/{id}', [AddressController::class, 'removeAddress']);     //Removes Address
-    
+
 
     // Route::get('restaurants/around-you/{longitude}/{latitude}/radius=400', [RestaurantController::class, 'findNearestRestaurants']);
 
@@ -174,7 +175,7 @@ Route::group(['middleware' => ['auth:api']], function(){
     //CHECKOUTS
     Route::post('checkout', [CheckoutController::class, 'store']);
     Route::get('checkout/show/{id}', [CheckoutController::class, 'show']);
-    
+
     //PRODUCTS ROUTE
     Route::get('products', [ProductController::class, 'index']);
     Route::get('products/products-of-shop/{shop_id}', [ProductController::class, 'productsOfShop']);
@@ -182,7 +183,7 @@ Route::group(['middleware' => ['auth:api']], function(){
 
 
     //Orders
-    
+
     Route::get('order/my-order', [OrderController::class, 'myOrder']);     //List the order issued by specific user
     Route::post('order/store', [OrderController::class,'store']);     //Add item to the Order issued by specific user
     Route::post('order/update/status', [OrderController::class,'updateStatus']);     //Add item to the Order issued by specific user
@@ -196,20 +197,20 @@ Route::group(['middleware' => ['auth:api']], function(){
     Route::get('orders/completed', [CheckoutController::class, 'getUserCompletedOrders']);
     //CanOrders
     Route::get('orders/rejected', [CheckoutController::class, 'getUserRejectedOrders']);
-    
+
     //UserCancelOrder
     Route::delete('order/cancel/{id}', [CheckoutController::class, 'cancelOrder']);     //Cancel Specific Order issued by specific user
-    
-   
+
+
     //Services Routes
     Route::apiResource('services', ServiceController::class);
-   
-   
+
+
     Route::get('rated', [ShopController::class, 'topRatedShops']);
     Route::get('shops', [ShopController::class, 'getShops']);
     Route::get('business/{id}', [BusinessController::class, 'show']);
-       
- 
+
+
 
     Route::get('grocery-shopping/categories', [ServiceController::class, 'getGroceryShopping']);
     Route::post('upload', [ImageController::class, 'upload']);
@@ -217,19 +218,19 @@ Route::group(['middleware' => ['auth:api']], function(){
 
     Route::post('bookings/create', [BookingsController::class, 'store']);
 
-    
+
     // BOOKINGS ROUTE
     Route::get('bookings', [BookingsController::class, 'index']);
 
-    Route::get('bookings/user/{id}',[BookingsController::class, 'BookingForParticularUser']); //bookings for a particular user
+//    Route::get('bookings/user/{id}',[BookingsController::class, 'BookingForParticularUser']); //bookings for a particular user
     Route::get("bookings/single-bookings/{id}",[BookingsController::class,'getBooking']);
-    Route::post("bookings/{booking_id}/set-status/{status_id}","BookingsController@setBookingStatusId");
+//    Route::post("bookings/{booking_id}/set-status/{status_id}","BookingsController@setBookingStatusId");
 
 
-    Route::get("bookings/artisan/{id}/{pagination?}","BookingsController@BookingForParticularArtisan");
-    Route::get("bookings/pending-artisan/{artisan_id}/get-status/{status}","BookingsController@getPendingBookingForArtisan");
-    Route::get("bookings/pending-artisan/{user_id}/get-status/{status}","BookingsController@getPendingBookingForUser");
-    Route::get("bookings/get-approved/{customers_id}","BookingsController@getAllwhereUsersIdEqualsCustomersIdAndIsApproved");
+//    Route::get("bookings/artisan/{id}/{pagination?}","BookingsController@BookingForParticularArtisan");
+//    Route::get("bookings/pending-artisan/{artisan_id}/get-status/{status}","BookingsController@getPendingBookingForArtisan");
+//    Route::get("bookings/pending-artisan/{user_id}/get-status/{status}","BookingsController@getPendingBookingForUser");
+//    Route::get("bookings/get-approved/{customers_id}","BookingsController@getAllwhereUsersIdEqualsCustomersIdAndIsApproved");
 
     //Review
     Route::get('reviews', [ReviewController::class, 'reviews']);
@@ -241,7 +242,7 @@ Route::group(['middleware' => ['auth:api']], function(){
     Route::get('categories', [CategoryController::class, 'index']);
     Route::get('categories/show/{id}', [CategoryController::class, 'show']);
     Route::get('categories/categories-in-shop/{id}', [CategoryController::class, 'categoryInShop']);
-    
+
 
 
     //TECHNICAL SERVICE ROUTES
@@ -265,7 +266,7 @@ Route::group(['middleware' => ['auth:api']], function(){
 //     Route::get('vendors/{id}', [HomeController::class, 'showVendor']);
 
 //     //Business Routes General
-//     
+//
 //     Route::get('business/{id}', [BusinessController::class, 'showBusiness']);
 //     Route::post('business/create', [BusinessController::class, 'store']);
 //     Route::get('offers', [VendorController::class, 'offers']);
@@ -282,12 +283,12 @@ Route::group(['middleware' => ['auth:api']], function(){
 //     Route::get("bookings/get-approved/{customers_id}",[BookingsController::class, 'getAllwhereUsersIdEqualsCustomersIdAndIsApproved']);
 
 
-//    
+//
 //      //display admin profile
 //     Route::post("/profilephoto/add","AdminAuthController@AddProfilePicture");
 //     Route::post("/profile","AdminAuthController@getAuthadmin");
 
 // });
 
-//     
+//
 // });

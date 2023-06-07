@@ -21,7 +21,8 @@ class AddressController extends Controller
 
         return response([
             'success' => true,
-            'data' => AddressResource::collection($address)], Response::HTTP_ACCEPTED);
+            'data' => AddressResource::collection($address)
+        ], Response::HTTP_ACCEPTED);
     }
 
     public function store(Request $request){
@@ -38,11 +39,11 @@ class AddressController extends Controller
         $address->save();
 
         // $data = new AddressResource($address);
-        
+
         return response()->json(
             [
-                'success' => true, 
-                'message' => 'user address stored successfully', 
+                'success' => true,
+                'message' => 'user address stored successfully',
                 'data' => [new AddressResource($address)],
             ], Response::HTTP_CREATED
         );
@@ -54,7 +55,7 @@ class AddressController extends Controller
 
         return response()->json(
             [
-                'success' => true, 
+                'success' => true,
                 'message' => 'user addresses',
                 'data' => AddressResource::collection($address),
             ], Response::HTTP_ACCEPTED

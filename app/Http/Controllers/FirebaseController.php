@@ -11,7 +11,7 @@ use Kreait\Firebase\Messaging\Notification;
 class FirebaseController extends Controller
 {
 
-    
+
     public function index(){
 
         $serviceAccount = ServiceAccount::fromJsonFile(__DIR__.'/FirebaseKey.json');
@@ -26,9 +26,8 @@ class FirebaseController extends Controller
         ->push([
             'title' =>  'Laravel 6',
             'body'  =>  'This is really a cool database that is managed in real time.'
-
         ]);
-            
+
         echo '<pre>';
         print_r($createPost->getvalue());
         echo '</pre>';
@@ -43,7 +42,7 @@ class FirebaseController extends Controller
         ->create();
 
         $database   =   $firebase->getDatabase();
-        $createPost    =   $database->getReference('blog/posts')->getvalue();      
+        $createPost    =   $database->getReference('blog/posts')->getvalue();
         return response()->json($createPost);
     }
 
@@ -69,9 +68,9 @@ class FirebaseController extends Controller
         $message = CloudMessage::withTarget('token', $deviceToken)
             ->withNotification(Notification::create('Push notification', 'Hey dude'));
             //->withData(['key' => 'value']); Optional
-        
+
         $messaging->send($message);
-    
+
     }
 
     public function sendToTopic(){
@@ -102,7 +101,7 @@ class FirebaseController extends Controller
         $message = CloudMessage::withTarget('topic', $topic)
             ->withNotification($notification);
             //->withData(['key' => 'value']); Optional
-        
+
             // $message = CloudMessage::fromArray([
             //     'topic' => $topic,
             //     'notification' => $notification//[/* Notification data as array */], // optional
@@ -110,5 +109,6 @@ class FirebaseController extends Controller
             // ]);
 
         $messaging->send($message);
-    
+
+
             }}
