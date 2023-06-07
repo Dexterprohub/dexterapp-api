@@ -25,10 +25,12 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
     public function cart(): BelongsTo
     {
         return $this->belongsTo(Cart::class);
     }
+
     public function cartProducts(): HasMany
     {
         return $this->hasMany(CartProduct::class);
@@ -38,6 +40,7 @@ class Product extends Model
     {
         return $this->belongsTo(Service::class);
     }
+
     public function shop(): BelongsTo
     {
         return $this->belongsTo(Shop::class);

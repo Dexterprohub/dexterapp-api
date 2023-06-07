@@ -111,12 +111,12 @@ Route::group(['prefix' => 'vendor'], function() {
 
         //PRODUCTS ROUT
         Route::get('products', [ProductController::class, 'index']);
-        Route::get('products/show/{id}', [ProductController::class, 'show']);
+        Route::get('products/show/{product}', [ProductController::class, 'show']);
         Route::post('products/store', [ProductController::class, 'store']);
-        Route::put('products/update/{id}', [ProductController::class, 'update']);
+        Route::put('products/update/{product}', [ProductController::class, 'update']);
         Route::get('products/products-of-shop/{shop_id}', [ProductController::class, 'productsOfShop']);
         Route::get('products/products-in-category/{category_id}', [ProductController::class, 'productsinCategory']);
-        Route::delete('products/delete/{id}', [ProductController::class, 'destroy']);
+        Route::delete('products/delete/{product}', [ProductController::class, 'destroy']);
 
 
 
