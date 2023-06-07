@@ -56,7 +56,7 @@ class ProductController extends Controller
 
         // Check if the request is valid
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'message' => $validator->messages()->first()]);
+            return response()->json(['status' => 'error', 'message' => $validator->messages()->first()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         // Get the validated data

@@ -23,9 +23,7 @@ class ServiceSeeder extends Seeder
             ['name' => 'House Cleaning', 'description' => 'House Cleaning Services'],
             ['name' => 'Grocery Shopping', 'description' => 'Grocery Services'],
             ['name' => 'Fashion Designer', 'description' => 'Fashion Design Services'],
-            ['name' => 'Shortlet', 'description' => 'Shortles Services']
-            
+            ['name' => 'Shortlet', 'description' => 'Shortles Services'
         ]);
-    
     }
 }
