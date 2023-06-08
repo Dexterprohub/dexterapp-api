@@ -2,56 +2,37 @@
 
 namespace App\Events;
 
+use App\Models\Checkout;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Order;
-
 
 class OrderRequestPlaced implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
-    
-    public $checkout;
-    /**
-     * Create a new event instance.
-     *
-     * @return void
-     */
-    public function __construct( $checkout)
-    {
-        $this->checkout = $checkout;
-    }
 
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return \Illuminate\Broadcasting\Channel|array
-     */
-    public function broadcastOn()
+    public function __construct(protected readonly Checkout $checkout) {}
+
+    public function broadcastOn(): Channel|PrivateChannel|array
     {
         return new PrivateChannel('checkouts.'. $this->checkout->id);
     }
 
-    public function broadcastAs(){
+    public function broadcastAs(): string
+    {
         return 'order-placed';
     }
 
-    public function broadcastWith()
+    public function broadcastWith(): array
     {
         return [
             'order' => [
-                // 'id' => $this->checkout->id,
-                // 'customer' => $this->checkout->user->first_name . ' ' . $this->checkout->user->last_name ,
                 'message' => 'New order request from '. $this->checkout->user->first_name. ' ' . $this->checkout->user->last_name,
-    
                 'total' => $this->checkout->total,
             ],
         ];
     }
-
 }

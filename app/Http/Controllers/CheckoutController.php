@@ -2,300 +2,236 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Validator;
-use Auth;
-use App\Models\Cart;
+use App\Enums\CheckoutStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
+use App\Events\OrderRequestPlaced;
+use App\Models\CartProduct;
 use App\Models\Checkout;
 use App\Models\Vendor;
-use App\Events\OrderUpdated;
-use App\Events\OrderCanceled;
-use App\Http\Resources\CheckoutResource;
+use Auth;
 use Carbon;
-use App\Notifications\OrderPlacedNotification;
-use App\Events\OrderRequestPlaced;
-use Symfony\Component\HttpFoundation\Response;
-// use Unicodeveloper\Paystack\Facades\Paystack;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rules\Enum;
 use Paystack;
+use Symfony\Component\HttpFoundation\Response;
+
 
 class CheckoutController extends Controller
 {
-    public function index(){
-        
-    }
-    
-    public function store(Request $request){
-        
-        $user = Auth::guard('api')->user(); 
+    public function index() {}
+
+    public function store(Request $request)
+    {
+        // validate
+        $validatedData = validator($request->all(), [
+            'address' => ['required', 'string'],
+            'notes' => ['nullable', 'string'],
+            'payment_method' => ['required', new Enum(PaymentMethod::class)],
+        ])->validate();
+
+        $paymentMethod = PaymentMethod::tryFrom($validatedData['payment_method']);
+
+        // assign variables
+        $user = Auth::guard('api')->user();
         $cart = $user->cart;
-        $vendor  = $cart->cartProducts->first()->product->shop->vendor;
+        $cartProducts = CartProduct::with('product.shop')->where('cart_id', $cart->id)->get();
+        $vendor = Vendor::find($cartProducts->first()->product->shop->vendor_id);
+        $vendor->load('shop');
+        $subtotal = $cartProducts->sum('price');
 
-        $cartProducts = $cart->cartProducts;
-       
-        //total of cart items without vat, additional charge, and delivery fee
-        $subtotal = 0;
-        foreach ($cartProducts as $cartProduct) {
+        // add additional amounts
+        $vatAmount = (7.5 / 100) * $subtotal;
+        $shippingCost = $vendor->shop->shippingcost;
+        $additionalCharge = $vendor->shop->additionalcharge;
+        $discount = $vendor->shop->discount;
+        $discountAmount = 0;
 
-            $subtotal += $cartProduct->price;
+        // if there is a discount, remove it from the subtotal
+        if ($discount > 0) {
+            $discountAmount = ($discount / 100) * $subtotal;
         }
-        
-        //total with vat  
-        $withvat = (7.5 / 100) * $subtotal;
 
-        //delivery fee
-        $shippingcost =  $cartProducts->first()->product->shop->shippingcost;
-        
-        if($shippingcost == 0) {
-            $shippingcost = 0;
-        } else {
-            $shippingcost = $shippingcost;
-        }
-               
-        //additional charge
-        $additionalcharge = $cartProducts->first()->product->shop->additionalcharge;
-        
-        if ($additionalcharge == 0) {
-            $additionalprice = 0;
-        } else {
-            $additionalprice = $additionalcharge;
-        }   
+        $totalAmount = ($subtotal + $vatAmount + $shippingCost + $additionalCharge) - $discountAmount;
 
-        $discount = $cartProducts->first()->product->shop->discount;
+        $orderNumber = strtoupper(\Str::random(4)).'-'.str_pad($user->id + 1, 4, strtoupper(\Str::random()), STR_PAD_LEFT);
 
-        if ($discount == 0) {
-            $withdiscount = 0;
-        } else {
-            $discount = $discount / 100 * $subtotal;
-            $withdiscount = $discount;
-        } 
+        $checkout = Checkout::create([
+            'user_id' => $user->id,
+            'vendor_id' => $vendor->id,
+            'cart_id' => $cart->id,
+            'phone' => $user->phone,
+            'address' => $validatedData['address'],
+            'payment_method' => $paymentMethod,
+            'subtotal' => $subtotal,
+            'discount' => $discountAmount ?? 0,
+            'order_date' => Carbon::now(),
+            'order_number' => $orderNumber,
+            'tax' => $vatAmount ?? 0,
+            'shippingcost' => $shippingCost ?? 0,
+            'additionalcharge' => $additionalCharge ?? 0,
+            'notes' => $validatedData['notes'],
+            'total' => $totalAmount,
+            'status' => CheckoutStatus::PENDING,
+            'payment_status' => PaymentStatus::PENDING
+        ]);
 
-        $totalBeforeDiscount = $withvat + $additionalprice + $shippingcost + $subtotal;
-        
-        $total = $totalBeforeDiscount - $withdiscount;
-        
-        $status = 1;
-        $order_number = strtoupper(\Str::random(4)) . '-' . str_pad($user->id+ 1, 4 , strtoupper(\Str::random()), STR_PAD_LEFT);
-        
-        $validatedData = $request->validate(
-            [
-                'payment_method' => 'required',
-            ]
-        );
-
-        $checkout = new Checkout(); 
-        
-        $checkout->user_id = $user->id; 
-        $checkout->vendor_id = $vendor->id;
-        $checkout->cart_id = $cart->id; 
-        $checkout->phone = $user->phone; 
-        $checkout->address = $request->address; 
-        $checkout->payment_method = $validatedData['payment_method']; 
-        $checkout->subtotal = $subtotal;
-        $checkout->discount = $withdiscount; 
-        $checkout->order_date = Carbon::now();
-        $checkout->order_number = $order_number;
-        $checkout->tax = $withvat;
-        $checkout->shippingcost = $shippingcost; 
-        $checkout->additionalcharge = $additionalcharge;
-        $checkout->notes = $request->notes; 
-        $checkout->review = $request->review; 
-        $checkout->total = $total;
-        $checkout->status = $status;
-        $checkout->payment_status = 0;
-        $checkout->save();
-       
-        // Check if user wants to pay with Paystack
-        if ($request->payment_method === 'paystack') {
-            
-            $reference = \Str::uuid()->toString();
-
-            $paymentData = array(
-
-                'amount' => $checkout->total * 100, // Amount in kobo
-                'email' => $user->email,
-                'reference' => $reference,
-                'order_id' => $checkout->id,
-            );
-
-            try{
-                return Paystack::getAuthorizationUrl($paymentData)->redirectNow();
-            }catch(\Exception $e) {
-                return response()->json(['msg'=>'The paystack token has expired. Please refresh the page and try again.', 'type'=>'error']);
-            }    
-          
-        }
-           
-        //notify
         event(new OrderRequestPlaced($checkout));
 
-        return response()->json(
-            [
-                'success' => true, 
-                'message' => 'checkout successful', 
-                'data' => new CheckoutResource($checkout) 
-            ]
-        );
-    }
+        if ($paymentMethod === PaymentMethod::PAYSTACK) {
+            // handle paystack
+            $paymentDetails = [
+                'email' => $user->email,
+                'amount' => parse_money($checkout->total),
+                'reference' => $checkout->order_number,
+                'callback_url' => route('callback.paystack'),
+            ];
 
-    public function updateOrder(Request $request, $checkoutId){
-       
-        // Retrieve the order by ID
-        $checkout = checkout::find($checkoutId);
+            $response = Paystack::transaction()->initialize($paymentDetails)->response();
 
-        $validatedData = $request->validate([ 'status' => 'required']);
+            if (!$response['status']) {
+                // update the payment method to transfer
+                $checkout->update([
+                    'payment_method' => PaymentMethod::CASH
+                ]);
 
-        // Update the order status to "accepted"
-        $checkout->status = $validatedData['status'];
-        return $checkout->status;
-        if($checkout->status){}
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'An error occurred while processing your request. Please try again later., Please use an alternative payment method.'
+                ], Response::HTTP_SERVICE_UNAVAILABLE);
+            }
 
-        $checkout->update(['status' => $validatedData['status']]);
-
-        if ($checkout->status = 2) {
-            event(new OrderUpdated($checkout));
-            // event(new OrderAcceptedEmail($user));
-            return response()->json(['success' => true, 'message' => 'order confirmed']);
-
-        } elseif ($checkout->status = 3) {
-            event(new OrderComplete($checkout));
-            
-            return response()->json(['success' => true, 'message' => 'order completed']);
-
-        }elseif ($checkout->status = 0) {
-            event(new OrderCanceled($checkout));
-            // event(new OrderCanceledEmail($checkout));
-            return response()->json(['success' => true, 'message' => 'order canceled']);
-
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Checkout successful',
+                'data' => [
+                    ...$checkout->toArray(),
+                    'authorization_url' => $response['data']['authorization_url'],
+                ]
+            ]);
         }
-        
 
-        // Broadcast the updated order to all subscribed clients
-        // event(new OrderUpdated($checkout));
-        
-        return response()->json(['message' => 'Order updated successfully', 'data' => $checkout], Response::HTTP_ACCEPTED);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Checkout successful',
+            'data' => $checkout,
+        ]);
     }
 
-    public function show($id){
-        
+    public function update(Request $request, Checkout $checkout)
+    {
+        $validatedData = validator($request->all(), [
+            'status' => ['required', new Enum(CheckoutStatus::class)],
+        ])->validate();
+
+        $orderStatus = CheckoutStatus::tryFrom($validatedData['status']);
+        $statusMessage = 'Order updated successfully';
+
+        if ($orderStatus === CheckoutStatus::CONFIRMED) {
+            $statusMessage = 'Order confirmed successfully';
+            $checkout->update(['status' => CheckoutStatus::CONFIRMED]);
+        } elseif ($orderStatus === CheckoutStatus::COMPLETED) {
+            $statusMessage = 'Order completed successfully';
+            $checkout->update(['status' => CheckoutStatus::CONFIRMED, 'payment_status' => PaymentStatus::SUCCESSFUL]);
+        } elseif ($orderStatus === CheckoutStatus::CANCELLED) {
+            $statusMessage = 'Order canceled successfully';
+            $checkout->update(['status' => CheckoutStatus::CANCELLED, 'payment_status' => PaymentStatus::FAILED]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => $statusMessage,
+            'data' => $checkout
+        ]);
+    }
+
+    public function show(Checkout $checkout)
+    {
         // retrieve the current authenticated user
         $user = Auth::guard('api')->user();
-        
-        // cetrieve the order by its ID
-        $checkout = Checkout::find($id);
-        
+
         // check if the order belongs to the current user
         if ($checkout->user_id != $user->id) {
-            abort(403, 'Unauthorized action.');
+            return response()->json([
+                'status' => 'error',
+                'message' => 'You are not authorized to view this order'
+            ], Response::HTTP_UNAUTHORIZED);
         }
-        
-        // Return the order to the view
-        return response()->json(['success' => true, 'order' => $checkout]);
+
+        return response()->json([
+            'status' => "success",
+            'message' => "Order retrieved successfully",
+            'data' => $checkout
+        ]);
     }
 
-    public function getUserPendingOrders(){
-
+    public function pendingOrders()
+    {
         $user = Auth::guard('api')->user();
-        $pending = Checkout::where(['user_id' => $user->id, 'status' => 1])->get();
+        $orders = Checkout::where(['user_id' => $user->id, 'status' => CheckoutStatus::PENDING])->get();
 
-        if(($pending)->isEmpty()){
-            return response()->json(['success' => false, 'message' => 'user has no pending orders'],404);
-        }
-
-        return response()->json(['success' => true, 'message' => 'user pending orders', 'data' => $pending], Response::HTTP_ACCEPTED);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Pending orders retrieved successfully',
+            'data' => $orders
+        ]);
     }
 
-    public function getUserActiveOrders(){
-        
+    public function getUserActiveOrders()
+    {
         $user = Auth::guard('api')->user();
+        $orders = Checkout::where(['user_id' => $user->id, 'status' => CheckoutStatus::CONFIRMED])->get();
 
-        $active = Checkout::where(['user_id' => $user->id, 'status' => 2])->get();
-        
-        if(($active)->isEmpty()){
-            return response()->json(['success' => false, 'message' => 'user as no active order'], 404);
-        }
-
-        return response()->json(['success' => true, 'message' => 'User active orders', 'data' => $active], Response::HTTP_ACCEPTED);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Confirmed orders retrieved successfully',
+            'data' => $orders
+        ]);
     }
 
-    public function getUserCompletedOrders(){
-        $completed = Checkout::where(['user_id' => \Auth::id(), 'status' => 3])->get();
-        
-        if(($completed)->isEmpty()){
-            return response()->json(['success' => true, 'message' => 'user as no completed order', 'data' => []]);
-        }
+    public function getUserCompletedOrders()
+    {
+        $user = Auth::guard('api')->user();
+        $orders = Checkout::where(['user_id' => $user->id, 'status' => CheckoutStatus::COMPLETED])->get();
 
-        return response()->json(['success' => true, 'message' => 'User completed orders', 'data' => $completed], Response::HTTP_ACCEPTED);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Completed orders retrieved successfully',
+            'data' => $orders
+        ]);
     }
-    
+
     public function getUserRejectedOrders()
     {
-        // Retrieve the current authenticated user
+
         $user = Auth::guard('api')->user();
-        
-        // Retrieve all orders that have a status of "canceled" and belong to the current user
-        $canceledOrders = Checkout::where('user_id', $user->id, 'status', 0);
-        
-        // Return the canceled orders
-        return response()->json(['success' => true, 'orders' => $canceledOrders]);
+        $orders = Checkout::where(['user_id' => $user->id, 'status' => CheckoutStatus::CANCELLED])->get();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Cancelled orders retrieved successfully',
+            'data' => $orders
+        ]);
     }
 
-    //User cancel order
-    public function cancelOrder($id)
+    public function cancelOrder(Checkout $checkout)
     {
         $now = Carbon::now();
-        $checkout = Checkout::where('id', $id)->get();
+        $cancel_time = Carbon::parse($checkout)->addMinutes(10);
 
-        $num = count($checkout);
-
-        if ($num == 0) {
-            return response([]);
-        } else {
-            foreach ($checkout as $checkout) {
-                $checkout = $checkout->created_at;
-                $cancel_time = Carbon::parse($checkout)->addMinutes(10);
-
-                if ($now > $cancel_time) {
-                    return response()->json(['success' => false, 'message' => 'You cannot cancel the checkout after 10 minutes of checkout time'], 406);
-                } else {
-                    $checkout->delete();
-                    return response()->json(['success' => true, 'message' => 'Order has been cancelled'], 200);
-                }
-            }
+        if ($now > $cancel_time) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'You cannot cancel the checkout after 10 minutes of checkout time'
+            ], Response::HTTP_BAD_REQUEST);
         }
+
+        $checkout->update(['status' => CheckoutStatus::CANCELLED, 'payment_status' => PaymentStatus::FAILED]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Order cancelled successfully',
+            'data' => $checkout
+        ]);
     }
-
-    public function price($product_id)
-    {
-        $product = Product::where('id', $product_id)->first();
-        // $additionalcharge = $product->shop->shopdetail->additionalcharge;
-        
-        //price without additional charge and vat
-        $withoutcharges = $product->price;
-        
-        //price with delivery fee
-        $shippingcost = $product->shop->shopdetail->first()->shippingcost;
-        
-        if ($shippingcost == 0) {
-            $deliveryfee = 0;
-        } else {
-            $deliveryfee = $shippingcost + $withoutcharges;
-        }
-               
-        //price with vat  
-        $withvat = (7.5 / 100) * $withoutcharges;
-
-        //price with additional charge
-        $additionalcharge = $product->shop->shopdetail->first()->additionalcharge;
-    
-        if ($addtionalcharge == 0) {
-            $addtionalprice = 0;
-        } else {
-            $addtionalprice = $addtionalcharge + $withoutcharges;
-        }
-        
-        //Total price with addtional charge, vat and delivery fee
-        $total_price = $withoutcharges + $withvat + $additionalprice;
-        return $total_price;
-    }
-
 }

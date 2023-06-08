@@ -97,7 +97,6 @@ Route::group(['prefix' => 'vendor'], function() {
         //REVIEWS
         // Route::post('reviews/store', [ReviewController::class, 'store']);
 
-
         Route::get('find-nearest-restaurants/{latitude}/{longitude}/{radius}', [RestaurantController::class, 'findNearestRestaurants']);
 
         //CATEGORY ROUTES
@@ -108,7 +107,6 @@ Route::group(['prefix' => 'vendor'], function() {
         Route::get('categories/categories-in-shop/{id}', [CategoryController::class, 'categoryInShop']);
         Route::delete('category/delete/{id}', [CategoryController::class, 'delete']);
 
-
         //PRODUCTS ROUT
         Route::get('products', [ProductController::class, 'index']);
         Route::get('products/show/{product}', [ProductController::class, 'show']);
@@ -118,13 +116,8 @@ Route::group(['prefix' => 'vendor'], function() {
         Route::get('products/products-in-category/{category_id}', [ProductController::class, 'productsinCategory']);
         Route::delete('products/delete/{product}', [ProductController::class, 'destroy']);
 
-
-
-        //CheckoutStatusUpdate
-        Route::put('order/order-update/{checkoutId}', [CheckoutController::class, 'updateOrder']);
-        //CheckoutCanceled
-        Route::put('order/show/{id}', [CheckoutController::class, 'show']);
-
+        Route::put('order/order-update/{checkout}', [CheckoutController::class, 'update']);
+        Route::get('order/show/{checkout}', [CheckoutController::class, 'show']);
 
         // Bookings
         Route::put('bookings/accept/{id}', [BookingsController::class, 'acceptBooking']);
@@ -188,10 +181,9 @@ Route::group(['middleware' => ['auth:api']], function(){
     Route::post('order/store', [OrderController::class,'store']);     //Add item to the Order issued by specific user
     Route::post('order/update/status', [OrderController::class,'updateStatus']);     //Add item to the Order issued by specific user
     Route::get('order/order-by-user/{id}', [OrderController::class,'orderByUser']);     //Add item to the Order issued by specific user
-    Route::delete('order/cancel/{id}', [CheckoutController::class, 'cancelOrder']);     //Cancel Specific Order issued by specific user
 
     //PendingCheckouts
-    Route::get('orders/pending', [CheckoutController::class, 'getUserPendingOrders']);
+    Route::get('orders/pending', [CheckoutController::class, 'pendingOrders']);
     //ActiveOrders
     Route::get('orders/active', [CheckoutController::class, 'getUserActiveOrders']);
     Route::get('orders/completed', [CheckoutController::class, 'getUserCompletedOrders']);
@@ -199,17 +191,16 @@ Route::group(['middleware' => ['auth:api']], function(){
     Route::get('orders/rejected', [CheckoutController::class, 'getUserRejectedOrders']);
 
     //UserCancelOrder
-    Route::delete('order/cancel/{id}', [CheckoutController::class, 'cancelOrder']);     //Cancel Specific Order issued by specific user
+    Route::delete('order/cancel/{checkout}', [CheckoutController::class, 'cancelOrder']);     //Cancel Specific Order issued by specific user
 
 
     //Services Routes
     Route::apiResource('services', ServiceController::class);
 
 
-    Route::get('rated', [ShopDetailController::class, 'topRatedShops']);
-    Route::get('shops', [ShopDetailController::class, 'getShops']);
+    Route::get('rated', [ShopController::class, 'topRatedShops']);
+    Route::get('shops', [ShopController::class, 'getShops']);
     Route::get('business/{id}', [BusinessController::class, 'show']);
-
 
 
     Route::get('grocery-shopping/categories', [ServiceController::class, 'getGroceryShopping']);
@@ -242,8 +233,6 @@ Route::group(['middleware' => ['auth:api']], function(){
     Route::get('categories', [CategoryController::class, 'index']);
     Route::get('categories/show/{id}', [CategoryController::class, 'show']);
     Route::get('categories/categories-in-shop/{id}', [CategoryController::class, 'categoryInShop']);
-
-
 
     //TECHNICAL SERVICE ROUTES
     Route::get('technical-services', [ElectricalServiceController::class, 'index']);

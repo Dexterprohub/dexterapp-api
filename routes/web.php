@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CallbackController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,16 +14,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('mails.UserWelcome');
-});
-
-// Auth::routes();
-
-// Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
-//Auth::routes();
+Route::get('/', fn() => view('mails.UserWelcome'));
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-//Route::post('register', [AuthController::class, 'create']);
+Route::get('/callback/paystack', [CallbackController::class, 'paystack'])->name('callback.paystack');
