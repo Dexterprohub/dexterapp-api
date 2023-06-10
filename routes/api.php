@@ -89,10 +89,10 @@ Route::group(['prefix' => 'vendor'], function() {
         Route::put('resend-otp', [VendorAuthController::class, 'resendOTP']);
 
         //SHOP ROUTES
-        Route::post('create-shop', [ShopDetailController::class, 'createShop']);
+        Route::post('create-shop', [ShopController::class, 'createShop']);
         Route::patch('shop/update/{id}', [ShopDetailController::class, 'update']);
         Route::get('shop/show/{shop}', [ShopDetailController::class, 'show']);
-        Route::delete('shop/delete/{id}', [ShopDetailController::class, 'destroy']);
+        Route::delete('shop/delete/{id}', [ShopController::class, 'destroy']);
 
         //REVIEWS
         // Route::post('reviews/store', [ReviewController::class, 'store']);
