@@ -58,33 +58,33 @@ class VendorAuthController extends Controller
         $vendor->otp = $otp;
         $vendor->otp_expiry = Carbon::now()->addMinutes(5); // Set OTP to expire after 5 minutes
 
-        $vendor->save(); 
+        $vendor->save();
 
         Auth::guard('vendor')->setUser($vendor);
 
         $authUser = auth()->guard('vendor')->user();
 
         $token = $vendor->createToken('vendorToken', ['vendors']);
-        
+
 
         // $vendor->notify(new VendorWelcomeEmailNotification($vendor));
-       
+
         // Dispatch the WelcomeEmail event with the newly created user as a parameter
         event(new VendorWelcomeEmailEvent($vendor));
-       
+
         // Dispatch the SendVerificationOTP event with the newly created user as a parameter
         event(new SendVerificationOTPEvent($vendor, $otp));
 
         return response([
             'success' => true,
-            'message' => 'Registration successful', 
+            'message' => 'Registration successful',
             'token' => $token->plainTextToken,
         ], Response::HTTP_CREATED);
-    
+
     }
 
     public function login(Request $request){
-         
+
         // Validate login form data
         $request->validate([
             'email' => 'required|email',
@@ -97,7 +97,7 @@ class VendorAuthController extends Controller
 
         // Query the vendors table to retrieve the vendor by email
         $vendor = Vendor::where('email', $email)->first();
-         
+
         if ($vendor) {
             // Validate the password using Hash::check()
             if (Hash::check($password, $vendor->password)) {
@@ -106,7 +106,7 @@ class VendorAuthController extends Controller
                 $authUser = auth()->guard('vendor')->user();
 
                 $token = $vendor->createToken('vendorToken', ['vendors']);
-                
+
                 return response()->json([
                     'success' => true,
                     'message' => 'log in successful',
@@ -114,14 +114,14 @@ class VendorAuthController extends Controller
                 ], Response::HTTP_ACCEPTED);
             } else {
                 $response = ['success' => false, "message" => "Password mismatch"];
-                
+
                 return response($response, 422);
             }
         } else {
             $response = ['success' => false, "message" =>'User does not exist'];
             return response($response, 422);
         }
-                             
+
     }
 
     public function storeVendorType(Request $request){
@@ -132,22 +132,21 @@ class VendorAuthController extends Controller
         ]);
 
         $vendor = Vendor::findOrFail($validatedData['vendor_id']);
-        
+
         $vendor->service_id = $validatedData['service_id'];
         $vendor->save();
-        
+
         return response()->json(['success' => true, 'message' => 'Vendor service stored', 'service' => $vendor->service]);
     }
-    
+
     public function getAuthVendor(){
         $vendor = Auth::guard('vendor')->user();
-        
-        // return (new UserResource($user))->additional([
-            //     'permissions' => $user->permissions()
-            // ]);     
-        return response()->json(['success' => true, 'data' => new GetAuthVendorResource($vendor)]); 
+
+        $vendor->load('shop');
+
+        return response()->json(['success' => true, 'data' => $vendor ]);
     }
-        
+
     public function logout(Request $request) {
         if (Auth::guard('vendor')->check()) {
             $vendor = Auth::guard('vendor')->user();
@@ -157,7 +156,7 @@ class VendorAuthController extends Controller
             // $vendor->logout();
             return response(['success' => true, 'message' => 'You have been successfully logged out!']);
         }
-                 
+
     }
 
     public function update(Request $request)
@@ -173,11 +172,11 @@ class VendorAuthController extends Controller
             ]
         );
 
-        if($request->hasFile('image')){ 
+        if($request->hasFile('image')){
 
             $image = $request->file('image');
             $image_extension = $image->getClientOriginalExtension();
-            
+
             if(SanitizeController::CheckFileExtensions($image_extension,array("png","jpg","jpeg","PNG","JPG","JPEG"))==FALSE){
                 return response()->json(
                     [
@@ -186,7 +185,7 @@ class VendorAuthController extends Controller
                     ], 500
                 );
             }
- 
+
             $rename_image = uniqid()."_".time().date("Ymd")."_IMG.".$image_extension; //change file name
 
             $upload = \Cloudinary::upload($image->getRealPath(), ['folder' => 'vendor/updatedVendor'])->getSecurePath();
@@ -194,7 +193,7 @@ class VendorAuthController extends Controller
             if($upload){
                $vendor->image = $upload;
                $vendor->save();
-            }            
+            }
         }
 
         $vendor->update($request->only('first_name', 'last_name', 'qualification', 'nin', 'state', 'city', 'street'));
@@ -207,20 +206,20 @@ class VendorAuthController extends Controller
         // $vendor->city = $validatedData['city'];
         // $vendor->street = $validatedData['street'];
 
-       
+
 
         return response()->json(['success' => true, 'message' => 'Detail updated successfully', 'detail' => $vendor]);
-                
+
     }
 
-   
+
     public function updatePassword(Request $request)
     {
         $vendor = Auth::guard('vendor')->user();
 
         $vendor->update(['password' => Hash::make($request->password)]);
-            
-        // return response(new VendorResource($vendor), Response::HTTP_ACCEPTED); 
+
+        // return response(new VendorResource($vendor), Response::HTTP_ACCEPTED);
         return response(['message' => 'Password updated successfully'], Response::HTTP_ACCEPTED);
     }
 
@@ -249,12 +248,12 @@ class VendorAuthController extends Controller
     }
 
     public function resendOTP(Request $request){
-        
+
         // $validatedData = $request->validate([
         //     'email' => 'required|email |exists:vendors,email'
         // ]);
-        
-        
+
+
         $vendor = Auth::guard('vendor')->user();
 
         $email = $vendor->email;

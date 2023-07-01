@@ -13,7 +13,7 @@ use App\Models\VendorOnlineStatus;
 class VendorController extends Controller
 {
 
-    public function getVendorOnlineStatus(){
+    public function getVendorOnlineStatus() {
         // $vendor_api = Auth::getDefaultDriver();
         $vendor = Auth::guard('vendor')->user();
       
